@@ -33,7 +33,7 @@ jobs:
       - name: 上传静态文件
         uses: actions/upload-pages-artifact@v3
         with:
-          path: qingke-web
+          path: .
 
       - name: 部署到 GitHub Pages
         id: deployment

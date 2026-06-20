@@ -1,6 +1,5 @@
 const CACHE = 'qingke-v1';
 const ASSETS = [
-  '/',
   'index.html',
   'manifest.json',
   'css/style.css',

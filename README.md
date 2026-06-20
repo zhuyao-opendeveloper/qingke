@@ -28,7 +28,8 @@
 
 ### 在线体验
 
-👉 [https://zhuyao-opendeveloper.github.io/qingke/](https://zhuyao-opendeveloper.github.io/qingke/)
+👉 [https://zhuyao-opendeveloper.github.io/qingke/](https://zhuyao-opendeveloper.github.io/qingke/) — 项目介绍页
+👉 [https://zhuyao-opendeveloper.github.io/qingke/qingke-web/](https://zhuyao-opendeveloper.github.io/qingke/qingke-web/) — 应用入口
 
 ## 技术栈
 
@@ -59,6 +60,7 @@ npx serve qingke-web
 
 ```
 /
+├── index.html           # 项目介绍页
 ├── qingke-web/          # 主应用
 │   ├── index.html       # 入口页面
 │   ├── manifest.json    # PWA 配置
@@ -76,7 +78,7 @@ npx serve qingke-web
 
 ## 手机安装
 
-用手机浏览器打开 [https://zhuyao-opendeveloper.github.io/qingke/](https://zhuyao-opendeveloper.github.io/qingke/)：
+用手机浏览器打开 [https://zhuyao-opendeveloper.github.io/qingke/qingke-web/](https://zhuyao-opendeveloper.github.io/qingke/qingke-web/)：
 
 - **Android** — Chrome 菜单 → 添加到主屏幕
 - **iOS** — Safari 分享 → 添加到主屏幕

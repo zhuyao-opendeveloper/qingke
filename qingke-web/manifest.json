@@ -2,7 +2,7 @@
   "name": "轻刻 - OpenTodo",
   "short_name": "轻刻",
   "description": "让每一天都有所进步 — 清新现代的任务管理工具",
-  "start_url": ".",
+  "start_url": "/qingke-web/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "portrait",
@@ -11,7 +11,7 @@
   "categories": ["productivity", "utilities"],
   "lang": "zh-CN",
   "dir": "ltr",
-  "scope": ".",
+  "scope": "/qingke-web/",
   "prefer_related_applications": false,
   "icons": [
     { "src": "icons/icon-48.png", "sizes": "48x48", "type": "image/png" },
