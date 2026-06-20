@@ -1,0 +1,16 @@
+{
+  "name": "轻刻",
+  "short_name": "轻刻",
+  "description": "让每一天都有所进步",
+  "start_url": "/qingke-web/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4A90E2",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%234A90E2'/%3E%3Cpath d='M14 24L21 31L34 18' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

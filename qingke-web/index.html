@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4A90E2">
+    <title>轻刻 - 让每一天都有所进步</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Loading screen -->
+    <div id="loading-view" class="loading-view">
+        <div class="logo">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <rect width="48" height="48" rx="12" fill="#4A90E2"/>
+                <path d="M14 24L21 31L34 18" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="loading-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Drawer -->
+    <div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer()"></div>
+    <div id="drawer" class="drawer">
+        <div class="drawer-header">
+            <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+                <rect width="48" height="48" rx="12" fill="#4A90E2"/>
+                <path d="M14 24L21 31L34 18" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="drawer-title">轻刻</span>
+        </div>
+        <nav class="drawer-nav" id="drawer-nav">
+            <a class="drawer-item" data-route="projects" onclick="navigateTo('projects')">
+                <span class="drawer-icon">&#128193;</span> 项目
+            </a>
+            <a class="drawer-item" data-route="tags" onclick="navigateTo('tags')">
+                <span class="drawer-icon">&#127991;</span> 标签
+            </a>
+            <a class="drawer-item" data-route="habits" onclick="navigateTo('habits')">
+                <span class="drawer-icon">&#128202;</span> 习惯
+            </a>
+            <a class="drawer-item" data-route="countdowns" onclick="navigateTo('countdowns')">
+                <span class="drawer-icon">&#9200;</span> 倒计时
+            </a>
+            <div class="drawer-divider"></div>
+            <a class="drawer-item" data-route="matrix" onclick="navigateTo('matrix')">
+                <span class="drawer-icon">&#9632;</span> 四象限
+            </a>
+            <a class="drawer-item" data-route="timeline" onclick="navigateTo('timeline')">
+                <span class="drawer-icon">&#128197;</span> 时间线
+            </a>
+            <a class="drawer-item" data-route="kanban" onclick="navigateTo('kanban')">
+                <span class="drawer-icon">&#128196;</span> 看板
+            </a>
+            <div class="drawer-divider"></div>
+            <a class="drawer-item" data-route="search" onclick="navigateTo('search')">
+                <span class="drawer-icon">&#128269;</span> 搜索
+            </a>
+            <a class="drawer-item" data-route="settings" onclick="navigateTo('settings')">
+                <span class="drawer-icon">&#9881;</span> 设置
+            </a>
+        </nav>
+    </div>
+
+    <!-- App Shell -->
+    <div id="app" class="app">
+        <!-- Top App Bar -->
+        <header id="app-bar" class="app-bar">
+            <button id="menu-btn" class="icon-btn" onclick="toggleDrawer()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12h18M3 6h18M3 18h18"/>
+                </svg>
+            </button>
+            <h1 id="app-title" class="app-title">轻刻</h1>
+            <div id="app-bar-actions" class="app-bar-actions">
+                <button id="search-btn" class="icon-btn" onclick="navigateTo('search')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="main-content"></main>
+    </div>
+
+    <!-- Bottom Tab Bar (phone only) -->
+    <nav id="bottom-bar" class="bottom-bar">
+        <button class="tab-item active" data-route="home" onclick="navigateTo('home')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            <span class="tab-label">收件箱</span>
+        </button>
+        <button class="tab-item" data-route="calendar" onclick="navigateTo('calendar')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+            <span class="tab-label">日历</span>
+        </button>
+        <button class="tab-item" data-route="chat" onclick="navigateTo('chat')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2C6.48 2 2 6.48 2 12c0 1.88.52 3.64 1.41 5.13L2 22l5.13-1.41C8.36 21.48 10.12 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/>
+            </svg>
+            <span class="tab-label">聊天</span>
+        </button>
+        <button class="tab-item" data-route="focus" onclick="navigateTo('focus')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            <span class="tab-label">专注</span>
+        </button>
+        <button class="tab-item" data-route="more" onclick="toggleDrawer()">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+            </svg>
+            <span class="tab-label">更多</span>
+        </button>
+    </nav>
+
+    <!-- Floating Action Button -->
+    <button id="fab" class="fab" onclick="onFabClick()">+</button>
+
+    <!-- Task Detail Modal -->
+    <div id="task-modal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <button class="icon-btn" onclick="closeTaskModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <h2 id="task-modal-title">任务详情</h2>
+                <div class="modal-actions">
+                    <button id="task-edit-btn" class="icon-btn" onclick="editCurrentTask()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </button>
+                    <button id="task-delete-btn" class="icon-btn" onclick="deleteCurrentTask()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="task-detail-body" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- New/Edit Task Modal -->
+    <div id="task-form-modal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <button class="icon-btn" onclick="closeTaskFormModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+                <h2 id="task-form-title">新建任务</h2>
+                <div class="modal-actions">
+                    <button class="icon-btn" onclick="saveAsTemplate()" title="保存为模板">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+                        </svg>
+                    </button>
+                    <button class="btn btn-primary" onclick="saveTaskForm()">保存</button>
+                </div>
+            </div>
+            <div class="modal-body" id="task-form-body"></div>
+        </div>
+    </div>
+
+    <!-- Confirm Dialog -->
+    <div id="confirm-dialog" class="modal" onclick="closeModal(event)">
+        <div class="confirm-dialog" onclick="event.stopPropagation()">
+            <p id="confirm-message">确定要删除吗？</p>
+            <div class="confirm-actions">
+                <button class="btn" onclick="closeConfirmDialog()">取消</button>
+                <button class="btn btn-danger" id="confirm-btn" onclick="closeConfirmDialog()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="attachment-file" accept="image/*,.pdf,.doc,.docx,.txt" style="display:none" onchange="handleAttachmentFile(event)"/>
+    <input type="file" id="external-import-file" accept=".json" style="display:none" onchange="handleExternalImport(event)"/>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="js/icons.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/screens.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
