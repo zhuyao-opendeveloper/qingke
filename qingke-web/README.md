@@ -1,6 +1,6 @@
 # 轻刻 Web
 
-轻刻 (Qingke) 是一个开源的待办任务管理工具，此 Web 版完全复刻了 [Android 版本](https://github.com/zhuyao-opendeveloper/-) 的界面和功能。
+轻刻 (Qingke) 是一个开源的待办任务管理工具，此 Web 版完全复刻了 [Android 版本](https://github.com/zhuyao-opendeveloper/qingke) 的界面和功能。
 
 ## 功能
 
