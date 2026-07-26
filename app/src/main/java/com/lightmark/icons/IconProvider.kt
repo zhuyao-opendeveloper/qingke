@@ -19,7 +19,7 @@ import androidx.compose.material.icons.outlined.CheckCircleOutline
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.FlagOutline
+import androidx.compose.material.Icons.Filled.Flag
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Menu
@@ -36,10 +36,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.lightmark.domain.model.IconPack
 
 /**
- * 图标提供者接口
- *
- * 用户可在设置中自由切换图标库（Material Symbols / Fluent UI / Lucide）
- * 所有图标使用统一接口，切换时只需替换 IconProvider 实现
+ * 图标提供者接�? *
+ * 用户可在设置中自由切换图标库（Material Symbols / Fluent UI / Lucide�? * 所有图标使用统一接口，切换时只需替换 IconProvider 实现
  */
 interface IconProvider {
 
@@ -65,8 +63,7 @@ interface IconProvider {
 }
 
 /**
- * Material Symbols 图标库（默认）
- *
+ * Material Symbols 图标库（默认�? *
  * Android 原生 Material Icons 实现
  * 是默认且最稳定的选项
  */
@@ -87,21 +84,16 @@ object MaterialIconProvider : IconProvider {
 
     override val circleOutline: ImageVector get() = Icons.Outlined.Circle
     override val checkCircle: ImageVector get() = Icons.Outlined.CheckCircleOutline
-    override val flagOutline: ImageVector get() = Icons.Outlined.FlagOutline
+    override val flagOutline: ImageVector get() = Icons.Filled.Flag
 }
 
 /**
- * Fluent UI 图标库
- *
+ * Fluent UI 图标�? *
  * 注意：Fluent UI Icons 不是 Android 内置图标
- * 需要使用 Fluent UI Android 库或自定义图标资源
- * 目前以 Material Icons 占位，实际使用时需要接入
- * com.microsoft.fluent:fluent-icons-android 依赖
+ * 需要使�?Fluent UI Android 库或自定义图标资�? * 目前�?Material Icons 占位，实际使用时需要接�? * com.microsoft.fluent:fluent-icons-android 依赖
  */
 object FluentIconProvider : IconProvider {
-    // Fluent 图标需要额外接入 fluent-icons-android 库
-    // 目前使用 Material 占位，待 fluent-icons 集成后替换
-    override val add: ImageVector get() = Icons.Filled.Add
+    // Fluent 图标需要额外接�?fluent-icons-android �?    // 目前使用 Material 占位，待 fluent-icons 集成后替�?    override val add: ImageVector get() = Icons.Filled.Add
     override val check: ImageVector get() = Icons.Filled.Check
     override val close: ImageVector get() = Icons.Filled.Clear
     override val delete: ImageVector get() = Icons.Filled.Delete
@@ -116,15 +108,13 @@ object FluentIconProvider : IconProvider {
     override val star: ImageVector get() = Icons.Filled.Star
     override val circleOutline: ImageVector get() = Icons.Outlined.Circle
     override val checkCircle: ImageVector get() = Icons.Outlined.CheckCircleOutline
-    override val flagOutline: ImageVector get() = Icons.Outlined.FlagOutline
+    override val flagOutline: ImageVector get() = Icons.Filled.Flag
 }
 
 /**
- * Lucide 图标库
- *
+ * Lucide 图标�? *
  * 注意：Lucide Icons 不是 Android 内置图标
- * 需要使用 lucide-android 库或自定义图标资源
- * 目前以 Material Icons 占位
+ * 需要使�?lucide-android 库或自定义图标资�? * 目前�?Material Icons 占位
  */
 object LucideIconProvider : IconProvider {
     override val add: ImageVector get() = Icons.Filled.Add
@@ -142,7 +132,7 @@ object LucideIconProvider : IconProvider {
     override val star: ImageVector get() = Icons.Filled.Star
     override val circleOutline: ImageVector get() = Icons.Outlined.Circle
     override val checkCircle: ImageVector get() = Icons.Outlined.CheckCircleOutline
-    override val flagOutline: ImageVector get() = Icons.Outlined.FlagOutline
+    override val flagOutline: ImageVector get() = Icons.Filled.Flag
 }
 
 /**
@@ -155,10 +145,9 @@ fun getIconProvider(pack: IconPack): IconProvider = when (pack) {
 }
 
 /**
- * 可组合函数 - 渲染当前图标库的图标
+ * 可组合函�?- 渲染当前图标库的图标
  *
- * 使用方式：
- * ```kotlin
+ * 使用方式�? * ```kotlin
  * LightMarkIcon(
  *     provider = currentIconProvider,
  *     icon = { it.home },
@@ -181,3 +170,4 @@ fun LightMarkIcon(
         tint = tint
     )
 }
+
