@@ -54,7 +54,7 @@ class HomeViewModel @Inject constructor(
             filtered = filtered.filter {
                 it.title.contains(query, ignoreCase = true) ||
                     it.description.contains(query, ignoreCase = true) ||
-                    it.tags.any { tag -> tag.contains(query, ignoreCase = true) }
+                    it.tags.any { tag -> tag.contains(query as CharSequence, true) }
             }
         }
 
@@ -131,3 +131,4 @@ private fun TodoEntity.toDomain() = TodoItem(
     updatedAt = updatedAt,
     completedAt = completedAt
 )
+
