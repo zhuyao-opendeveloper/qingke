@@ -6,12 +6,5 @@ pluginManagement {
     }
 }
 
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
 rootProject.name = "LightMark"
 include(":app")
