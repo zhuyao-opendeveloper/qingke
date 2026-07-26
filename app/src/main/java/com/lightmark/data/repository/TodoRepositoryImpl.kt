@@ -108,17 +108,5 @@ class TodoRepositoryImpl @Inject constructor(
         completedAt = completedAt
     )
 
-    private fun com.lightmark.data.local.entity.TodoEntity.toDomain() = TodoItem(
-        id = id,
-        title = title,
-        description = description,
-        isCompleted = isCompleted,
-        priority = com.lightmark.domain.model.Priority.fromString(priority),
-        categoryId = categoryId,
-        tags = tags,
-        dueDate = dueDate,
-        createdAt = createdAt,
-        updatedAt = updatedAt,
-        completedAt = completedAt
-    )
+    // Using TodoEntity.toDomain() from entity class directly
 }
