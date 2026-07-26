@@ -10,6 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.lightmark.ui.screens.home.HomeScreen
 import com.lightmark.ui.screens.home.HomeViewModel
@@ -29,12 +30,9 @@ object Routes {
 }
 
 /**
- * 轻刻主导航组件
- *
+ * 轻刻主导航组�? *
  * 使用 Jetpack Navigation Compose
- * 支持页面间动画过渡
- * 底部导航栏（主页/设置）
- *
+ * 支持页面间动画过�? * 底部导航栏（主页/设置�? *
  * @param initialRoute 初始路由
  * @param userId 当前用户 ID
  */
@@ -139,8 +137,7 @@ fun LightMarkNavHost(
 }
 
 /**
- * 轻刻底部导航栏
- *
+ * 轻刻底部导航�? *
  * Material 3 NavigationBar
  * 圆角设计，悬浮在屏幕底部
  */
@@ -183,3 +180,4 @@ fun LightMarkBottomBar(
         )
     }
 }
+
