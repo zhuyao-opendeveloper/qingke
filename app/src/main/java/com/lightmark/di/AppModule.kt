@@ -16,7 +16,7 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import java.util.concurrent.TimeUnit
@@ -86,11 +86,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGitHubApiService(okHttpClient: OkHttpClient): GitHubApiService {
-        val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
             .baseUrl("https://api.github.com/")
             .client(okHttpClient)
-            .addConverterFactory(json.asConverterFactory(contentType))
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(GitHubApiService::class.java)
     }
