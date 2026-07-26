@@ -14,23 +14,23 @@ import javax.inject.Inject
 /**
  * 主页 ViewModel
  *
- * 管理待办列表、搜索、筛选、排序等状�? */
+ * 管理待办列表、搜索、筛选、排序等状�? */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val todoDao: TodoDao
 ) : ViewModel() {
 
-    // 搜索关键�?    private val _searchQuery = MutableStateFlow("")
+    // 搜索关键�?    private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    // 当前筛选分�?    private val _selectedCategoryId = MutableStateFlow<String?>(null)
+    // 当前筛选分�?    private val _selectedCategoryId = MutableStateFlow<String?>(null)
     val selectedCategoryId: StateFlow<String?> = _selectedCategoryId.asStateFlow()
 
     // 当前排列方式
     private val _sortOrder = MutableStateFlow(SortOrder.CREATED_DESC)
     val sortOrder: StateFlow<SortOrder> = _sortOrder.asStateFlow()
 
-    // 当前界面模式（查�?搜索�?    private val _isSearching = MutableStateFlow(false)
+    // 当前界面模式（查�?搜索�?    private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
 
     // 当前图标库（从设置读取）
@@ -38,7 +38,7 @@ class HomeViewModel @Inject constructor(
     val currentIconProvider: IconProvider
         get() = getIconProvider(_iconPack.value)
 
-    // 待办列表（来自本�?Room 数据库）
+    // 待办列表（来自本�?Room 数据库）
     val todos: StateFlow<List<TodoItem>> = combine(
         todoDao.getAllTodos(),
         _searchQuery,
@@ -71,7 +71,7 @@ class HomeViewModel @Inject constructor(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** 切换完成状�?*/
+    /** 切换完成状�?*/
     fun toggleComplete(todoId: String) {
         viewModelScope.launch {
             val todo = todoDao.getTodoById(todoId) ?: return@launch
@@ -92,7 +92,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /** 更新搜索关键�?*/
+    /** 更新搜索关键�?*/
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
     }
@@ -110,7 +110,7 @@ class HomeViewModel @Inject constructor(
         _sortOrder.value = order
     }
 
-    /** 筛选分�?*/
+    /** 筛选分�?*/
     fun filterByCategory(categoryId: String?) {
         _selectedCategoryId.value = categoryId
     }
@@ -118,7 +118,10 @@ class HomeViewModel @Inject constructor(
 
 /** 排序方式 */
 enum class SortOrder {
-    CREATED_DESC,     // 最新优�?    CREATED_ASC,      // 最早优�?    PRIORITY_DESC,    // 优先级高优先
-    DUE_DATE_ASC,     // 截止期近优先
-    ALPHABETICAL      // 字母�?}
+    CREATED_DESC,
+    CREATED_ASC,
+    PRIORITY_DESC,
+    DUE_DATE_ASC,
+    ALPHABETICAL
+}
 
