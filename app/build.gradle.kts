@@ -23,7 +23,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        // GitHub API Base URL（可在 BuildConfig 中访问）
+        // GitHub API Base URL（可�?BuildConfig 中访问）
         buildConfigField("String", "GITHUB_API_BASE_URL", "\"https://api.github.com/\"")
         // 默认的数据仓库名
         buildConfigField("String", "GITHUB_REPO_NAME", "\"lightmark-data\"")
@@ -98,7 +98,7 @@ dependencies {
 
     // Network
     implementation(libs.retrofit)
-    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
 
@@ -131,3 +131,4 @@ dependencies {
     androidTestImplementation(libs.androidx.test.espresso)
     androidTestImplementation(platform(libs.androidx.compose.bom))
 }
+
