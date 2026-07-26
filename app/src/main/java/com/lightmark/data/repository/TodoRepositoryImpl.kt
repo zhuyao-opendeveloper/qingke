@@ -1,6 +1,7 @@
 package com.lightmark.data.repository
 
 import com.lightmark.data.local.dao.TodoDao
+import com.lightmark.data.local.entity.TodoEntity
 import com.lightmark.data.remote.GitHubApiService
 import com.lightmark.domain.model.Category
 import com.lightmark.domain.model.SyncData
@@ -12,12 +13,6 @@ import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * 待办数据仓库实现
- *
- * 本地：Room 数据库（离线可用）
- * 远程：GitHub 私有仓库（数据私有化）
- */
 @Singleton
 class TodoRepositoryImpl @Inject constructor(
     private val todoDao: TodoDao,
@@ -36,15 +31,15 @@ class TodoRepositoryImpl @Inject constructor(
     }
 
     override suspend fun insert(todo: TodoItem) {
-        todoDao.insertTodo(todo.toEntity())
+        todoDao.insertTodo(TodoEntity.fromDomain(todo))
     }
 
     override suspend fun update(todo: TodoItem) {
-        todoDao.updateTodo(todo.toEntity())
+        todoDao.updateTodo(TodoEntity.fromDomain(todo))
     }
 
     override suspend fun delete(todo: TodoItem) {
-        todoDao.deleteTodo(todo.toEntity())
+        todoDao.deleteTodo(TodoEntity.fromDomain(todo))
     }
 
     override suspend fun deleteById(id: String) {
@@ -69,7 +64,7 @@ class TodoRepositoryImpl @Inject constructor(
             repo = "lightmark-data",
             path = SyncData.FILE_PATH,
             body = com.lightmark.data.remote.GitHubContentRequestDto(
-                message = "同步轻刻数据 - ${System.currentTimeMillis()}",
+                message = "Sync LightMark data - ${System.currentTimeMillis()}",
                 content = base64Content
             )
         )
@@ -88,25 +83,7 @@ class TodoRepositoryImpl @Inject constructor(
         val syncData = json.decodeFromString(SyncData.serializer(), content)
 
         syncData.todos.forEach { todo ->
-            todoDao.insertTodo(todo.toEntity())
+            todoDao.insertTodo(TodoEntity.fromDomain(todo))
         }
     }
-
-    // ------- 扩展函数 -------
-
-    private fun TodoItem.toEntity() = com.lightmark.data.local.entity.TodoEntity(
-        id = id,
-        title = title,
-        description = description,
-        isCompleted = isCompleted,
-        priority = priority.name,
-        categoryId = categoryId,
-        tags = tags,
-        dueDate = dueDate,
-        createdAt = createdAt,
-        updatedAt = updatedAt,
-        completedAt = completedAt
-    )
-
-    // Using TodoEntity.toDomain() from entity class directly
 }
