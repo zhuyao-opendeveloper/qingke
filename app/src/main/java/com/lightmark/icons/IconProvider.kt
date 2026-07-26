@@ -19,7 +19,7 @@ import androidx.compose.material.icons.outlined.CheckCircleOutline
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.Icons.Filled.Flag
+import androidx.compose.material.Icons.Filled.Label
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Menu
@@ -84,7 +84,7 @@ object MaterialIconProvider : IconProvider {
 
     override val circleOutline: ImageVector get() = Icons.Outlined.Circle
     override val checkCircle: ImageVector get() = Icons.Outlined.CheckCircleOutline
-    override val flagOutline: ImageVector get() = Icons.Filled.Flag
+    override val flagOutline: ImageVector get() = Icons.Filled.Label
 }
 
 /**
@@ -108,7 +108,7 @@ object FluentIconProvider : IconProvider {
     override val star: ImageVector get() = Icons.Filled.Star
     override val circleOutline: ImageVector get() = Icons.Outlined.Circle
     override val checkCircle: ImageVector get() = Icons.Outlined.CheckCircleOutline
-    override val flagOutline: ImageVector get() = Icons.Filled.Flag
+    override val flagOutline: ImageVector get() = Icons.Filled.Label
 }
 
 /**
@@ -132,7 +132,7 @@ object LucideIconProvider : IconProvider {
     override val star: ImageVector get() = Icons.Filled.Star
     override val circleOutline: ImageVector get() = Icons.Outlined.Circle
     override val checkCircle: ImageVector get() = Icons.Outlined.CheckCircleOutline
-    override val flagOutline: ImageVector get() = Icons.Filled.Flag
+    override val flagOutline: ImageVector get() = Icons.Filled.Label
 }
 
 /**
@@ -170,4 +170,5 @@ fun LightMarkIcon(
         tint = tint
     )
 }
+
 
