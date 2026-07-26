@@ -16,7 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalLayoutApi
+
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChipDefaults
@@ -59,11 +59,9 @@ import kotlinx.coroutines.launch
  * - 截止日期设置
  * - AI 智能推荐
  *
- * @param todoId 待编辑的待办 ID（null 表示新建）
- * @param iconProvider 当前图标库
- * @param onNavigateBack 返回回调
+ * @param todoId 待编辑的待办 ID（null 表示新建�? * @param iconProvider 当前图标�? * @param onNavigateBack 返回回调
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditTodoScreen(
     todoId: String?,
@@ -73,8 +71,7 @@ fun AddEditTodoScreen(
     val isEditing = todoId != null
     val scope = rememberCoroutineScope()
 
-    // 表单状态
-    var title by remember { mutableStateOf("") }
+    // 表单状�?    var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf(Priority.MEDIUM) }
     var selectedCategoryId by remember { mutableStateOf<String?>(null) }
@@ -118,7 +115,7 @@ fun AddEditTodoScreen(
                 onValueChange = { title = it },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("标题") },
-                placeholder = { Text("写点什么...") },
+                placeholder = { Text("写点什�?..") },
                 singleLine = true,
                 shape = RoundedCornerShape(Dimens.cardCornerRadius)
             )
@@ -141,7 +138,7 @@ fun AddEditTodoScreen(
 
             // 优先级选择
             Text(
-                text = "优先级",
+                text = "优先�?,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -159,10 +156,10 @@ fun AddEditTodoScreen(
                         label = {
                             Text(
                                 text = when (p) {
-                                    Priority.LOW -> "低"
-                                    Priority.MEDIUM -> "中"
-                                    Priority.HIGH -> "高"
-                                    Priority.URGENT -> "紧急"
+                                    Priority.LOW -> "�?
+                                    Priority.MEDIUM -> "�?
+                                    Priority.HIGH -> "�?
+                                    Priority.URGENT -> "紧�?
                                 },
                                 fontSize = 13.sp
                             )
@@ -256,3 +253,4 @@ fun AddEditTodoScreen(
         }
     }
 }
+
