@@ -118,17 +118,4 @@ enum class SortOrder {
     ALPHABETICAL
 }
 
-private fun TodoEntity.toDomain() = TodoItem(
-    id = id,
-    title = title,
-    description = description,
-    isCompleted = isCompleted,
-    priority = com.lightmark.domain.model.Priority.fromString(priority),
-    categoryId = categoryId,
-    tags = tags,
-    dueDate = dueDate,
-    createdAt = createdAt,
-    updatedAt = updatedAt,
-    completedAt = completedAt
-)
 
