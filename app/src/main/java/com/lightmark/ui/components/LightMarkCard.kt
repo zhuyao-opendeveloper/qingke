@@ -12,15 +12,11 @@ import androidx.compose.ui.unit.dp
 import com.lightmark.ui.theme.Dimens
 
 /**
- * 轻刻风格的圆角悬浮卡片
- *
- * 特点：
- * - 12dp 大圆角，柔和现代
+ * 轻刻风格的圆角悬浮卡�? *
+ * 特点�? * - 12dp 大圆角，柔和现代
  * - 2dp 阴影，立体悬浮感
- * - 16dp 统一内边距
- *
- * 使用方式：
- * ```kotlin
+ * - 16dp 统一内边�? *
+ * 使用方式�? * ```kotlin
  * LightMarkCard {
  *     Text("卡片内容")
  * }
@@ -48,9 +44,7 @@ fun LightMarkCard(
             contentColor = contentColor
         )
     ) {
-        if (onClick != null) {
-            androidx.compose.material3.ContentAlpha.medium
-        }
+
         BoxWithPadding(contentPadding) {
             content()
         }
@@ -88,3 +82,4 @@ private fun BoxWithPadding(
         content()
     }
 }
+
