@@ -14,12 +14,13 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CheckCircleOutline
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.Icons.Filled.Label
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Menu
@@ -35,13 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.lightmark.domain.model.IconPack
 
-/**
- * 图标提供者接�? *
- * 用户可在设置中自由切换图标库（Material Symbols / Fluent UI / Lucide�? * 所有图标使用统一接口，切换时只需替换 IconProvider 实现
- */
 interface IconProvider {
-
-    // === 常用图标 ===
     val add: ImageVector
     val check: ImageVector
     val close: ImageVector
@@ -55,18 +50,11 @@ interface IconProvider {
     val search: ImageVector
     val settings: ImageVector
     val star: ImageVector
-
-    // === 待办专用 ===
     val circleOutline: ImageVector
     val checkCircle: ImageVector
     val flagOutline: ImageVector
 }
 
-/**
- * Material Symbols 图标库（默认�? *
- * Android 原生 Material Icons 实现
- * 是默认且最稳定的选项
- */
 object MaterialIconProvider : IconProvider {
     override val add: ImageVector get() = Icons.Filled.Add
     override val check: ImageVector get() = Icons.Filled.Check
@@ -81,19 +69,13 @@ object MaterialIconProvider : IconProvider {
     override val search: ImageVector get() = Icons.Filled.Search
     override val settings: ImageVector get() = Icons.Filled.Settings
     override val star: ImageVector get() = Icons.Filled.Star
-
     override val circleOutline: ImageVector get() = Icons.Outlined.Circle
     override val checkCircle: ImageVector get() = Icons.Outlined.CheckCircleOutline
-    override val flagOutline: ImageVector get() = Icons.Filled.Label
+    override val flagOutline: ImageVector get() = Icons.Outlined.Flag
 }
 
-/**
- * Fluent UI 图标�? *
- * 注意：Fluent UI Icons 不是 Android 内置图标
- * 需要使�?Fluent UI Android 库或自定义图标资�? * 目前�?Material Icons 占位，实际使用时需要接�? * com.microsoft.fluent:fluent-icons-android 依赖
- */
 object FluentIconProvider : IconProvider {
-    // Fluent 图标需要额外接�?fluent-icons-android �?    // 目前使用 Material 占位，待 fluent-icons 集成后替�?    override val add: ImageVector get() = Icons.Filled.Add
+    override val add: ImageVector get() = Icons.Filled.Add
     override val check: ImageVector get() = Icons.Filled.Check
     override val close: ImageVector get() = Icons.Filled.Clear
     override val delete: ImageVector get() = Icons.Filled.Delete
@@ -105,17 +87,12 @@ object FluentIconProvider : IconProvider {
     override val person: ImageVector get() = Icons.Filled.Person
     override val search: ImageVector get() = Icons.Filled.Search
     override val settings: ImageVector get() = Icons.Filled.Settings
-    override val star: ImageVector get() = Icons.Filled.Star
+    override val star: ImageVector get() = Icons.Filled.StarBorder
     override val circleOutline: ImageVector get() = Icons.Outlined.Circle
     override val checkCircle: ImageVector get() = Icons.Outlined.CheckCircleOutline
-    override val flagOutline: ImageVector get() = Icons.Filled.Label
+    override val flagOutline: ImageVector get() = Icons.Outlined.Flag
 }
 
-/**
- * Lucide 图标�? *
- * 注意：Lucide Icons 不是 Android 内置图标
- * 需要使�?lucide-android 库或自定义图标资�? * 目前�?Material Icons 占位
- */
 object LucideIconProvider : IconProvider {
     override val add: ImageVector get() = Icons.Filled.Add
     override val check: ImageVector get() = Icons.Filled.Check
@@ -129,32 +106,18 @@ object LucideIconProvider : IconProvider {
     override val person: ImageVector get() = Icons.Filled.Person
     override val search: ImageVector get() = Icons.Filled.Search
     override val settings: ImageVector get() = Icons.Filled.Settings
-    override val star: ImageVector get() = Icons.Filled.Star
+    override val star: ImageVector get() = Icons.Outlined.Star
     override val circleOutline: ImageVector get() = Icons.Outlined.Circle
     override val checkCircle: ImageVector get() = Icons.Outlined.CheckCircleOutline
-    override val flagOutline: ImageVector get() = Icons.Filled.Label
+    override val flagOutline: ImageVector get() = Icons.Outlined.Flag
 }
 
-/**
- * 根据图标包类型获取对应的 IconProvider
- */
 fun getIconProvider(pack: IconPack): IconProvider = when (pack) {
     IconPack.MATERIAL -> MaterialIconProvider
     IconPack.FLUENT -> FluentIconProvider
     IconPack.LUCIDE -> LucideIconProvider
 }
 
-/**
- * 可组合函�?- 渲染当前图标库的图标
- *
- * 使用方式�? * ```kotlin
- * LightMarkIcon(
- *     provider = currentIconProvider,
- *     icon = { it.home },
- *     contentDescription = "首页"
- * )
- * ```
- */
 @Composable
 fun LightMarkIcon(
     provider: IconProvider,
@@ -170,5 +133,3 @@ fun LightMarkIcon(
         tint = tint
     )
 }
-
-
