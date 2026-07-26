@@ -31,8 +31,8 @@ fun LightMarkTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> com.lightmark.ui.theme.Color.DarkColorScheme
-        else -> com.lightmark.ui.theme.Color.LightColorScheme
+        darkTheme -> com.lightmark.ui.theme.ColorKt.DarkColorScheme
+        else -> com.lightmark.ui.theme.ColorKt.LightColorScheme
     }
 
     val view = LocalView.current
@@ -50,3 +50,4 @@ fun LightMarkTheme(
         content = content
     )
 }
+
