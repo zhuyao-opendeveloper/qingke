@@ -2,7 +2,7 @@ package com.lightmark.ui.screens.todo
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,11 +12,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChipDefaults
@@ -33,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,20 +46,6 @@ import com.lightmark.ui.components.LightMarkButton
 import com.lightmark.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
-/**
- * 添加/编辑待办页面
- *
- * Material 3 风格表单，包含：
- * - 标题输入
- * - 描述输入
- * - 优先级选择
- * - 分类选择
- * - 标签输入
- * - 截止日期设置
- * - AI 智能推荐
- *
- * @param todoId 待编辑的待办 ID（null 表示新建�? * @param iconProvider 当前图标�? * @param onNavigateBack 返回回调
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditTodoScreen(
@@ -71,7 +56,7 @@ fun AddEditTodoScreen(
     val isEditing = todoId != null
     val scope = rememberCoroutineScope()
 
-    // 表单状�?    var title by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf(Priority.MEDIUM) }
     var selectedCategoryId by remember { mutableStateOf<String?>(null) }
@@ -109,20 +94,18 @@ fun AddEditTodoScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.lg)
         ) {
-            // 标题
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("标题") },
-                placeholder = { Text("写点什�?..") },
+                placeholder = { Text("写点什么...") },
                 singleLine = true,
                 shape = RoundedCornerShape(Dimens.cardCornerRadius)
             )
 
             Spacer(modifier = Modifier.height(Dimens.md))
 
-            // 描述
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -136,9 +119,8 @@ fun AddEditTodoScreen(
 
             Spacer(modifier = Modifier.height(Dimens.lg))
 
-            // 优先级选择
             Text(
-                text = "优先�?,
+                text = "优先级",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -146,24 +128,21 @@ fun AddEditTodoScreen(
 
             Spacer(modifier = Modifier.height(Dimens.sm))
 
-            FlowRow(
+            // Priority selection using Row instead of FlowRow to avoid experimental API
+            Row(
                 horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
             ) {
                 Priority.entries.forEach { p ->
+                    val label = when (p) {
+                        Priority.LOW -> "低"
+                        Priority.MEDIUM -> "中"
+                        Priority.HIGH -> "高"
+                        Priority.URGENT -> "紧急"
+                    }
                     FilterChip(
                         selected = priority == p,
                         onClick = { priority = p },
-                        label = {
-                            Text(
-                                text = when (p) {
-                                    Priority.LOW -> "�?
-                                    Priority.MEDIUM -> "�?
-                                    Priority.HIGH -> "�?
-                                    Priority.URGENT -> "紧�?
-                                },
-                                fontSize = 13.sp
-                            )
-                        },
+                        label = { Text(label, fontSize = 13.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = when (p) {
                                 Priority.LOW -> MaterialTheme.colorScheme.secondaryContainer
@@ -178,7 +157,6 @@ fun AddEditTodoScreen(
 
             Spacer(modifier = Modifier.height(Dimens.lg))
 
-            // 标签输入
             Text(
                 text = "标签",
                 fontSize = 14.sp,
@@ -213,12 +191,10 @@ fun AddEditTodoScreen(
                 }
             }
 
-            // 已添加的标签
             if (tags.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(Dimens.sm))
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.sm)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
                 ) {
                     tags.forEach { tag ->
                         InputChip(
@@ -239,13 +215,11 @@ fun AddEditTodoScreen(
 
             Spacer(modifier = Modifier.height(Dimens.xxxl))
 
-            // 保存按钮
             LightMarkButton(
                 text = if (isEditing) "保存修改" else "创建待办",
                 enabled = title.isNotBlank(),
                 onClick = {
                     scope.launch {
-                        // 保存逻辑
                         onNavigateBack()
                     }
                 }
@@ -253,4 +227,3 @@ fun AddEditTodoScreen(
         }
     }
 }
-
