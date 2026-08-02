@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +38,6 @@ import androidx.compose.ui.unit.sp
 import com.lightmark.auth.AuthManager
 import com.lightmark.ui.components.LightMarkButton
 import com.lightmark.ui.theme.Dimens
-import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -49,7 +47,6 @@ fun LoginScreen(
     var token by remember { mutableStateOf("") }
     var showToken by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
 
     Box(
@@ -65,20 +62,20 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "LightMark",
+                text = "轻刻",
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "qingke",
+                text = "LightMark",
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "Todo list with privacy",
+                text = "简洁 · 优雅 · 私有的待办清单",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
             )
@@ -93,13 +90,13 @@ fun LoginScreen(
             ) {
                 Column(modifier = Modifier.padding(Dimens.xl)) {
                     Text(
-                        text = "Login with GitHub Token",
+                        text = "使用 GitHub Token 登录",
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(Dimens.sm))
                     Text(
-                        text = "Your data is stored securely in your private GitHub repo",
+                        text = "数据将安全存储在你的 GitHub 私有仓库中",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
@@ -113,7 +110,7 @@ fun LoginScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text("GitHub Personal Access Token") },
-                        placeholder = { Text("ghp_... or github_pat_...") },
+                        placeholder = { Text("ghp_... 或 github_pat_...") },
                         singleLine = true,
                         visualTransformation = if (showToken)
                             VisualTransformation.None
@@ -128,7 +125,7 @@ fun LoginScreen(
                         ),
                         trailingIcon = {
                             TextButton(onClick = { showToken = !showToken }) {
-                                Text(text = if (showToken) "Hide" else "Show", fontSize = 12.sp)
+                                Text(text = if (showToken) "隐藏" else "显示", fontSize = 12.sp)
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
@@ -143,7 +140,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(Dimens.lg))
 
                     LightMarkButton(
-                        text = "Login",
+                        text = "登录",
                         enabled = token.isNotBlank(),
                         onClick = {
                             focusManager.clearFocus()
@@ -153,7 +150,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(Dimens.md))
 
                     Text(
-                        text = "How to get a token?\nGitHub Settings > Developer Settings > Personal Access Tokens > New token (needs repo scope)",
+                        text = "如何获取 Token？\nGitHub 设置 → Developer Settings → Personal Access Tokens → 新建 Token（需要 repo 权限）",
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                         textAlign = TextAlign.Start,

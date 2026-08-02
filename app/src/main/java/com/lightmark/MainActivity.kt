@@ -14,7 +14,6 @@ import com.lightmark.auth.AuthState
 import com.lightmark.ui.navigation.LightMarkNavHost
 import com.lightmark.ui.screens.auth.LoginScreen
 import com.lightmark.ui.theme.LightMarkTheme
-import com.lightmark.ui.theme.createThemeColors
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
