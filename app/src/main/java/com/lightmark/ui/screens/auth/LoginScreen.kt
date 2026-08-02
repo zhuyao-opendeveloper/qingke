@@ -14,18 +14,22 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -35,24 +39,51 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lightmark.auth.AuthManager
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.lightmark.ui.components.LightMarkButton
 import com.lightmark.ui.theme.Dimens
 
+/**
+ * 登录页面
+ *
+ * 使用 GitHub Personal Access Token 登录
+ * 渐变背景 + 圆角卡片设计
+ */
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
-    authManager: AuthManager? = null
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
     var token by remember { mutableStateOf("") }
     var showToken by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
     val focusManager = LocalFocusManager.current
+
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val loginSuccess by viewModel.loginSuccess.collectAsState()
+
+    // 登录成功后回调
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            onLoginSuccess()
+        }
+    }
+
+    val gradientColors = listOf(
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+        MaterialTheme.colorScheme.surface
+    )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(
+                Brush.verticalGradient(
+                    colors = gradientColors,
+                    startY = 0f,
+                    endY = 1000f
+                )
+            )
     ) {
         Column(
             modifier = Modifier
@@ -61,9 +92,10 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Logo 区域
             Text(
                 text = "轻刻",
-                fontSize = 40.sp,
+                fontSize = 42.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -73,7 +105,7 @@ fun LoginScreen(
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "简洁 · 优雅 · 私有的待办清单",
                 fontSize = 14.sp,
@@ -81,11 +113,12 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(Dimens.huge))
 
+            // 登录卡片
             Card(
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Column(modifier = Modifier.padding(Dimens.xl)) {
@@ -106,7 +139,6 @@ fun LoginScreen(
                         value = token,
                         onValueChange = {
                             token = it
-                            errorMessage = null
                         },
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text("GitHub Personal Access Token") },
@@ -139,13 +171,27 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(Dimens.lg))
 
-                    LightMarkButton(
-                        text = "登录",
-                        enabled = token.isNotBlank(),
-                        onClick = {
-                            focusManager.clearFocus()
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
-                    )
+                    } else {
+                        LightMarkButton(
+                            text = "登录",
+                            enabled = token.isNotBlank(),
+                            onClick = {
+                                focusManager.clearFocus()
+                                viewModel.login(token)
+                            }
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(Dimens.md))
 

@@ -30,9 +30,9 @@ object Routes {
 }
 
 /**
- * 轻刻主导航组�? *
+ * 轻刻主导航组�? *
  * 使用 Jetpack Navigation Compose
- * 支持页面间动画过�? * 底部导航栏（主页/设置�? *
+ * 支持页面间动画过�? * 底部导航栏（主页/设置�? *
  * @param initialRoute 初始路由
  * @param userId 当前用户 ID
  */
@@ -97,6 +97,7 @@ fun LightMarkNavHost(
             composable(Routes.HOME) {
                 HomeScreen(
                     viewModel = homeViewModel,
+                    userName = userId,
                     onNavigateToAdd = { navController.navigate(Routes.ADD_TODO) },
                     onNavigateToEdit = { todoId ->
                         navController.navigate(Routes.editTodo(todoId))
@@ -137,7 +138,7 @@ fun LightMarkNavHost(
 }
 
 /**
- * 轻刻底部导航�? *
+ * 轻刻底部导航�? *
  * Material 3 NavigationBar
  * 圆角设计，悬浮在屏幕底部
  */

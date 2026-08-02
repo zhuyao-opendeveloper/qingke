@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
@@ -27,40 +28,56 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.lightmark.domain.model.Priority
 import com.lightmark.icons.IconProvider
 import com.lightmark.icons.LightMarkIcon
 import com.lightmark.icons.MaterialIconProvider
 import com.lightmark.ui.components.LightMarkButton
 import com.lightmark.ui.theme.Dimens
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditTodoScreen(
     todoId: String?,
     iconProvider: IconProvider,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    viewModel: AddEditTodoViewModel = hiltViewModel()
 ) {
     val isEditing = todoId != null
-    val scope = rememberCoroutineScope()
+    val title by viewModel.title.collectAsState()
+    val description by viewModel.description.collectAsState()
+    val priority by viewModel.priority.collectAsState()
+    val tags by viewModel.tags.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val saveComplete by viewModel.saveComplete.collectAsState()
 
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var priority by remember { mutableStateOf(Priority.MEDIUM) }
-    var selectedCategoryId by remember { mutableStateOf<String?>(null) }
     var tagInput by remember { mutableStateOf("") }
-    var tags by remember { mutableStateOf(listOf<String>()) }
+
+    // 编辑模式：加载已有数据
+    LaunchedEffect(todoId) {
+        if (todoId != null) {
+            viewModel.loadTodo(todoId)
+        }
+    }
+
+    // 保存完成后返回
+    LaunchedEffect(saveComplete) {
+        if (saveComplete) {
+            onNavigateBack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -95,7 +112,7 @@ fun AddEditTodoScreen(
         ) {
             OutlinedTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = { viewModel.updateTitle(it) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("标题") },
                 placeholder = { Text("写点什么...") },
@@ -107,7 +124,7 @@ fun AddEditTodoScreen(
 
             OutlinedTextField(
                 value = description,
-                onValueChange = { description = it },
+                onValueChange = { viewModel.updateDescription(it) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp),
@@ -127,7 +144,6 @@ fun AddEditTodoScreen(
 
             Spacer(modifier = Modifier.height(Dimens.sm))
 
-            // Priority selection using Row instead of FlowRow to avoid experimental API
             Row(
                 horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
             ) {
@@ -140,7 +156,7 @@ fun AddEditTodoScreen(
                     }
                     FilterChip(
                         selected = priority == p,
-                        onClick = { priority = p },
+                        onClick = { viewModel.updatePriority(p) },
                         label = { Text(label, fontSize = 13.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = when (p) {
@@ -180,8 +196,8 @@ fun AddEditTodoScreen(
                 )
                 FilledTonalButton(
                     onClick = {
-                        if (tagInput.isNotBlank() && !tags.contains(tagInput.trim())) {
-                            tags = tags + tagInput.trim()
+                        if (tagInput.isNotBlank()) {
+                            viewModel.addTag(tagInput)
                             tagInput = ""
                         }
                     }
@@ -198,7 +214,7 @@ fun AddEditTodoScreen(
                     tags.forEach { tag ->
                         InputChip(
                             selected = false,
-                            onClick = { tags = tags - tag },
+                            onClick = { viewModel.removeTag(tag) },
                             label = { Text(tag, fontSize = 12.sp) },
                             trailingIcon = {
                                 Icon(
@@ -214,15 +230,22 @@ fun AddEditTodoScreen(
 
             Spacer(modifier = Modifier.height(Dimens.xxxl))
 
-            LightMarkButton(
-                text = if (isEditing) "保存修改" else "创建待办",
-                enabled = title.isNotBlank(),
-                onClick = {
-                    scope.launch {
-                        onNavigateBack()
-                    }
+            if (isLoading) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
-            )
+            } else {
+                LightMarkButton(
+                    text = if (isEditing) "保存修改" else "创建待办",
+                    enabled = title.isNotBlank(),
+                    onClick = { viewModel.save() }
+                )
+            }
         }
     }
 }

@@ -4,10 +4,12 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,21 +23,17 @@ import com.lightmark.ui.theme.Dimens
  *
  * 简洁、现代化的待办列表视图
  * 包含：
- * - 顶部标题栏（用户信息 + 设置入口）
+ * - 顶部标题栏（用户头像 + 设置入口）
  * - 搜索栏
  * - 待办列表（圆角悬浮卡片）
  * - 空状态占位
  * - FAB 添加按钮（在 Scaffold 中）
- *
- * @param viewModel 主页 ViewModel
- * @param onNavigateToAdd 跳转到添加页面
- * @param onNavigateToEdit 跳转到编辑页面
- * @param onNavigateToSettings 跳转到设置页面
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
+    userName: String = "",
     onNavigateToAdd: () -> Unit,
     onNavigateToEdit: (String) -> Unit,
     onNavigateToSettings: () -> Unit
@@ -51,11 +49,31 @@ fun HomeScreen(
         // 顶部标题栏
         TopAppBar(
             title = {
-                Text(
-                    text = "轻刻",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // 用户头像（首字母）
+                    Surface(
+                        modifier = Modifier.size(36.dp),
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = userName.firstOrNull()?.uppercase() ?: "U",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                    Text(
+                        text = "轻刻",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    )
+                }
             },
             actions = {
                 // 搜索按钮
@@ -103,10 +121,9 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     top = Dimens.sm,
-                    bottom = 80.dp // 给 FAB 留空间
+                    bottom = 80.dp
                 )
             ) {
-                // 今日待办标题
                 item {
                     Text(
                         text = "待办事项 (${todos.size})",
