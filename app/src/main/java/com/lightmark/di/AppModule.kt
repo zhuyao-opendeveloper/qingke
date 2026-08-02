@@ -84,11 +84,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGitHubApiService(okHttpClient: OkHttpClient): GitHubApiService {
+    fun provideGson(): com.google.gson.Gson = com.google.gson.GsonBuilder()
+        .setFieldNamingPolicy(com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+        .create()
+
+    @Provides
+    @Singleton
+    fun provideGitHubApiService(okHttpClient: OkHttpClient, gson: com.google.gson.Gson): GitHubApiService {
         return Retrofit.Builder()
             .baseUrl("https://api.github.com/")
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(GitHubApiService::class.java)
     }
