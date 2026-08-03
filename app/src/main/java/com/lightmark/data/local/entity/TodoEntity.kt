@@ -18,6 +18,7 @@ data class TodoEntity(
     val categoryId: String? = null,
     val tags: String = "",     // 用逗号分隔存储
     val dueDate: Long? = null,
+    val isPinned: Boolean = false, // 是否置顶
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null
@@ -32,6 +33,7 @@ data class TodoEntity(
         categoryId = categoryId,
         tags = if (tags.isBlank()) emptyList() else tags.split(",").map { it.trim() },
         dueDate = dueDate,
+        isPinned = isPinned,
         createdAt = createdAt,
         updatedAt = updatedAt,
         completedAt = completedAt
@@ -48,6 +50,7 @@ data class TodoEntity(
             categoryId = item.categoryId,
             tags = item.tags.joinToString(","),
             dueDate = item.dueDate,
+            isPinned = item.isPinned,
             createdAt = item.createdAt,
             updatedAt = item.updatedAt,
             completedAt = item.completedAt

@@ -1,6 +1,10 @@
 package com.lightmark.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.lightmark.data.local.LightMarkDatabase
 import com.lightmark.data.local.dao.CategoryDao
 import com.lightmark.data.local.dao.TodoDao
@@ -8,6 +12,7 @@ import com.lightmark.data.remote.GitHubApiService
 import com.lightmark.data.remote.GitHubAuthInterceptor
 import com.lightmark.data.repository.TodoRepository
 import com.lightmark.data.repository.TodoRepositoryImpl
+import com.lightmark.data.settings.SettingsRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -43,6 +48,20 @@ object AppModule {
     @Provides
     @Singleton
     fun provideJson(): Json = json
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return androidx.datastore.preferences.core.PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile("lightmark_settings") }
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideSettingsRepository(
+        dataStore: DataStore<Preferences>
+    ): SettingsRepository = SettingsRepository(dataStore)
 
     @Provides
     @Singleton

@@ -2,6 +2,9 @@ package com.lightmark.ui.navigation
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,16 +15,24 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import com.lightmark.ui.screens.ai.AiChatScreen
+import com.lightmark.ui.screens.categories.CategoriesScreen
 import com.lightmark.ui.screens.home.HomeScreen
 import com.lightmark.ui.screens.home.HomeViewModel
 import com.lightmark.ui.screens.settings.SettingsScreen
+import com.lightmark.ui.screens.stats.StatsScreen
 import com.lightmark.ui.screens.todo.AddEditTodoScreen
+import com.lightmark.icons.IconProvider
+import com.lightmark.icons.LightMarkIcon
 
 /**
- * è½»åˆ»å¯¼èˆªè·¯ç”±å®šä¹‰
+ * Çá¿Ìµ¼º½Â·ÓÉ¶¨Òå
  */
 object Routes {
     const val HOME = "home"
+    const val STATS = "stats"
+    const val AI = "ai"
+    const val CATEGORIES = "categories"
     const val ADD_TODO = "add_todo"
     const val EDIT_TODO = "edit_todo/{todoId}"
     const val SETTINGS = "settings"
@@ -30,11 +41,10 @@ object Routes {
 }
 
 /**
- * è½»åˆ»ä¸»å¯¼èˆªç»„ï¿½? *
- * ä½¿ç”¨ Jetpack Navigation Compose
- * æ”¯æŒé¡µé¢é—´åŠ¨ç”»è¿‡ï¿½? * åº•éƒ¨å¯¼èˆªæ ï¼ˆä¸»é¡µ/è®¾ç½®ï¿½? *
- * @param initialRoute åˆå§‹è·¯ç”±
- * @param userId å½“å‰ç”¨æˆ· ID
+ * Çá¿ÌÖ÷µ¼º½ÈÝÆ÷
+ *
+ * Ê¹ÓÃ Jetpack Navigation Compose£¬Ò³Ãæ¼äÇÐ»»´ø»¬¶¯ + µ­Èëµ­³ö¶¯»­¡£
+ * µ×²¿µ¼º½À¸£º´ý°ì / Í³¼Æ / AI / ÉèÖÃ¡£
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,8 +57,8 @@ fun LightMarkNavHost(
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
 
-    // æ˜¾ç¤ºåº•éƒ¨å¯¼èˆªæ çš„é¡µé¢
-    val showBottomBar = currentRoute in listOf(Routes.HOME)
+    // µ×²¿µ¼º½À¸Õ¹Ê¾µÄÒ³Ãæ
+    val showBottomBar = currentRoute in listOf(Routes.HOME, Routes.STATS, Routes.AI)
 
     Scaffold(
         bottomBar = {
@@ -79,7 +89,7 @@ fun LightMarkNavHost(
                     com.lightmark.icons.LightMarkIcon(
                         provider = homeViewModel.currentIconProvider,
                         icon = { add },
-                        contentDescription = "æ·»åŠ å¾…åŠž"
+                        contentDescription = "Ìí¼Ó´ý°ì"
                     )
                 }
             }
@@ -104,7 +114,28 @@ fun LightMarkNavHost(
                     },
                     onNavigateToSettings = {
                         navController.navigate(Routes.SETTINGS)
+                    },
+                    onNavigateToAi = {
+                        navController.navigate(Routes.AI)
                     }
+                )
+            }
+
+            composable(Routes.STATS) {
+                StatsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.AI) {
+                AiChatScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.CATEGORIES) {
+                CategoriesScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 
@@ -130,7 +161,8 @@ fun LightMarkNavHost(
 
             composable(Routes.SETTINGS) {
                 SettingsScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToCategories = { navController.navigate(Routes.CATEGORIES) }
                 )
             }
         }
@@ -138,9 +170,9 @@ fun LightMarkNavHost(
 }
 
 /**
- * è½»åˆ»åº•éƒ¨å¯¼èˆªï¿½? *
- * Material 3 NavigationBar
- * åœ†è§’è®¾è®¡ï¼Œæ‚¬æµ®åœ¨å±å¹•åº•éƒ¨
+ * Çá¿Ìµ×²¿µ¼º½À¸
+ *
+ * Material 3 NavigationBar£¬Ô²½ÇÉè¼Æ£¬Ðü¸¡ÔÚÆÁÄ»µ×²¿¡£
  */
 @Composable
 fun LightMarkBottomBar(
@@ -151,34 +183,44 @@ fun LightMarkBottomBar(
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = NavigationBarDefaults.Elevation
     ) {
-        // é¦–é¡µ
-        NavigationBarItem(
+        BottomItem(
             selected = currentRoute == Routes.HOME,
             onClick = { onNavigate(Routes.HOME) },
-            icon = {
-                Icon(
-                    imageVector = if (currentRoute == Routes.HOME)
-                        com.lightmark.icons.MaterialIconProvider.home
-                    else
-                        com.lightmark.icons.MaterialIconProvider.home,
-                    contentDescription = "é¦–é¡µ"
-                )
-            },
-            label = { Text("å¾…åŠž") }
+            icon = { LightMarkIcon(provider = com.lightmark.icons.MaterialIconProvider, icon = { home }, contentDescription = "´ý°ì") },
+            label = "´ý°ì"
         )
-
-        // è®¾ç½®
-        NavigationBarItem(
+        BottomItem(
+            selected = currentRoute == Routes.STATS,
+            onClick = { onNavigate(Routes.STATS) },
+            icon = { Icon(Icons.Filled.BarChart, contentDescription = "Í³¼Æ") },
+            label = "Í³¼Æ"
+        )
+        BottomItem(
+            selected = currentRoute == Routes.AI,
+            onClick = { onNavigate(Routes.AI) },
+            icon = { Icon(Icons.Filled.AutoAwesome, contentDescription = "AI", tint = MaterialTheme.colorScheme.primary) },
+            label = "AI"
+        )
+        BottomItem(
             selected = currentRoute == Routes.SETTINGS,
             onClick = { onNavigate(Routes.SETTINGS) },
-            icon = {
-                Icon(
-                    imageVector = com.lightmark.icons.MaterialIconProvider.settings,
-                    contentDescription = "è®¾ç½®"
-                )
-            },
-            label = { Text("è®¾ç½®") }
+            icon = { LightMarkIcon(provider = com.lightmark.icons.MaterialIconProvider, icon = { settings }, contentDescription = "ÉèÖÃ") },
+            label = "ÉèÖÃ"
         )
     }
 }
 
+@Composable
+private fun RowScope.BottomItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit,
+    label: String
+) {
+    NavigationBarItem(
+        selected = selected,
+        onClick = onClick,
+        icon = icon,
+        label = { Text(label) }
+    )
+}

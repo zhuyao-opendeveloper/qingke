@@ -28,6 +28,7 @@ enum class Priority {
  * @property categoryId 分类ID
  * @property tags 标签列表
  * @property dueDate 截止日期（时间戳毫秒）
+ * @property isPinned 是否置顶
  * @property createdAt 创建时间
  * @property updatedAt 更新时间
  * @property completedAt 完成时间
@@ -42,6 +43,7 @@ data class TodoItem(
     val categoryId: String? = null,
     val tags: List<String> = emptyList(),
     val dueDate: Long? = null,
+    val isPinned: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null

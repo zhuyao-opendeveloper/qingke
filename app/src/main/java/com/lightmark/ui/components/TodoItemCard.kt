@@ -47,6 +47,7 @@ fun TodoItemCard(
     onClick: () -> Unit,
     onDelete: () -> Unit,
     iconProvider: IconProvider,
+    onPin: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -59,7 +60,10 @@ fun TodoItemCard(
             defaultElevation = Dimens.cardElevation
         ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (item.isPinned)
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f)
+            else
+                MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -87,18 +91,31 @@ fun TodoItemCard(
                 modifier = Modifier.weight(1f)
             ) {
                 // 标题
-                Text(
-                    text = item.title,
-                    fontSize = 16.sp,
-                    fontWeight = if (item.isCompleted) FontWeight.Normal else FontWeight.Medium,
-                    color = if (item.isCompleted)
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    else
-                        MaterialTheme.colorScheme.onSurface,
-                    textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (item.isPinned) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Filled.PushPin,
+                            contentDescription = "已置顶",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                    Text(
+                        text = item.title,
+                        fontSize = 16.sp,
+                        fontWeight = if (item.isCompleted) FontWeight.Normal else FontWeight.Medium,
+                        color = if (item.isCompleted)
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        else
+                            MaterialTheme.colorScheme.onSurface,
+                        textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
                 // 描述
                 if (item.description.isNotBlank()) {
@@ -130,6 +147,24 @@ fun TodoItemCard(
             }
 
             Spacer(modifier = Modifier.width(Dimens.sm))
+
+            // 置顶按钮
+            IconButton(
+                onClick = onPin,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = if (item.isPinned)
+                        androidx.compose.material.icons.Icons.Filled.PushPin
+                    else
+                        androidx.compose.material.icons.Icons.Outlined.PushPin,
+                    contentDescription = "置顶",
+                    tint = if (item.isPinned)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+            }
 
             // 删除按钮
             IconButton(
