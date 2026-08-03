@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        authState is AuthState.Authenticated -> {
+                        authState is AuthState.Authenticated || authState is AuthState.Local -> {
                             LightMarkNavHost(
                                 initialRoute = "home",
                                 userId = currentUser?.login ?: ""
@@ -107,7 +107,8 @@ class MainActivity : ComponentActivity() {
                         }
                         else -> {
                             LoginScreen(
-                                onLoginSuccess = { /* ViewModel 中处理导航 */ }
+                                onLoginSuccess = { /* ViewModel 中处理导航 */ },
+                                onLocalUse = { authManager.enterLocalMode() }
                             )
                         }
                     }

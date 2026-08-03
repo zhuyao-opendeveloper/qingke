@@ -33,6 +33,7 @@ class AuthManager @Inject constructor(
         private const val KEY_USER_LOGIN = "user_login"
         private const val KEY_USER_NAME = "user_name"
         private const val KEY_USER_AVATAR = "user_avatar"
+        private const val KEY_LOCAL_MODE = "local_mode"
     }
 
     // 登录状态
@@ -71,6 +72,9 @@ class AuthManager @Inject constructor(
                     avatarUrl = avatar
                 )
                 _authState.value = AuthState.Authenticated
+            } else if (encryptedPrefs.getBoolean(KEY_LOCAL_MODE, false)) {
+                // 之前选择过「本地使用」，直接以本地模式进入
+                _authState.value = AuthState.Local
             }
         }
     }
@@ -98,6 +102,17 @@ class AuthManager @Inject constructor(
     }
 
     /**
+     * 进入本地使用模式（不登录）
+     * 持久化标记，下次启动直接进入本地模式，无需再次弹出警告
+     */
+    fun enterLocalMode() {
+        encryptedPrefs.edit()
+            .putBoolean(KEY_LOCAL_MODE, true)
+            .apply()
+        _authState.value = AuthState.Local
+    }
+
+    /**
      * 退出登录
      */
     fun logout() {
@@ -106,6 +121,7 @@ class AuthManager @Inject constructor(
             .remove(KEY_USER_LOGIN)
             .remove(KEY_USER_NAME)
             .remove(KEY_USER_AVATAR)
+            .putBoolean(KEY_LOCAL_MODE, false)
             .apply()
         _currentUser.value = null
         _authState.value = AuthState.Unauthenticated
@@ -154,6 +170,7 @@ sealed class AuthState {
     object Initial : AuthState()           // 初始状态（检查中）
     object Loading : AuthState()           // 登录中
     object Unauthenticated : AuthState()   // 未登录
+    object Local : AuthState()             // 本地模式（未登录，数据仅存本机）
     object Authenticated : AuthState()     // 已登录
     data class Error(val message: String) : AuthState() // 错误
 }

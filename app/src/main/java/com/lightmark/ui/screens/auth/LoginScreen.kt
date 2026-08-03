@@ -17,6 +17,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lightmark.ui.components.LightMarkButton
+import com.lightmark.ui.components.LightMarkTextButton
 import com.lightmark.ui.theme.Dimens
 
 /**
@@ -52,10 +54,12 @@ import com.lightmark.ui.theme.Dimens
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
+    onLocalUse: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     var token by remember { mutableStateOf("") }
     var showToken by remember { mutableStateOf(false) }
+    var showLocalWarning by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
     val isLoading by viewModel.isLoading.collectAsState()
@@ -202,8 +206,43 @@ fun LoginScreen(
                         textAlign = TextAlign.Start,
                         lineHeight = 18.sp
                     )
+
+                    Spacer(modifier = Modifier.height(Dimens.md))
+
+                    LightMarkTextButton(
+                        text = "暂不登录，本地使用",
+                        onClick = { showLocalWarning = true }
+                    )
                 }
             }
         }
+    }
+
+    if (showLocalWarning) {
+        AlertDialog(
+            onDismissRequest = { showLocalWarning = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLocalWarning = false
+                    onLocalUse()
+                }) {
+                    Text("仍然使用")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLocalWarning = false }) {
+                    Text("取消")
+                }
+            },
+            title = { Text("本地使用提醒") },
+            text = {
+                Text(
+                    "你将进入「本地使用」模式：所有待办、分类与设置数据都只保存在本机，" +
+                    "无法同步或上传到任何云端。更换设备或卸载应用后，这些数据将无法找回。\n\n" +
+                    "如需跨设备备份，请改用 GitHub 账号登录。",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        )
     }
 }
