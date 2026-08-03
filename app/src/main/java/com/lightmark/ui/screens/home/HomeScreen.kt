@@ -1,11 +1,11 @@
 package com.lightmark.ui.screens.home
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.animateItemPlacement
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -252,16 +252,16 @@ fun HomeScreen(
                                 enter = slideInVertically(
                                     initialOffsetY = { it / 4 }
                                 ) + fadeIn(animationSpec = tween(300)),
-                                modifier = Modifier.animateItemPlacement()
+                                modifier = Modifier
                             ) {
                                 val dismissState = rememberSwipeToDismissBoxState(
                                     confirmValueChange = { value ->
                                         when (value) {
-                                            DismissValue.DismissedToEnd -> {
+                                            SwipeToDismissBoxValue.StartToEnd -> {
                                                 viewModel.toggleComplete(todo.id)
                                                 false
                                             }
-                                            DismissValue.DismissedToStart -> {
+                                            SwipeToDismissBoxValue.EndToStart -> {
                                                 viewModel.deleteTodo(todo.id)
                                                 false
                                             }
@@ -313,8 +313,8 @@ private fun DismissBackground(
 ) {
     val direction = state.dismissDirection
     val color = when (direction) {
-        DismissDirection.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
-        DismissDirection.EndToStart -> MaterialTheme.colorScheme.errorContainer
+        SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
+        SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.errorContainer
         else -> Color.Transparent
     }
     Box(
@@ -324,17 +324,17 @@ private fun DismissBackground(
             .clip(RoundedCornerShape(Dimens.cardCornerRadius))
             .background(color),
         contentAlignment = when (direction) {
-            DismissDirection.StartToEnd -> Alignment.CenterStart
-            DismissDirection.EndToStart -> Alignment.CenterEnd
+            SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+            SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
             else -> Alignment.Center
         }
     ) {
-        if (direction != null) {
+        if (direction != SwipeToDismissBoxValue.Settled) {
             Icon(
-                imageVector = if (direction == DismissDirection.StartToEnd)
+                imageVector = if (direction == SwipeToDismissBoxValue.StartToEnd)
                     iconProvider.checkCircle else iconProvider.delete,
                 contentDescription = null,
-                tint = if (direction == DismissDirection.StartToEnd)
+                tint = if (direction == SwipeToDismissBoxValue.StartToEnd)
                     MaterialTheme.colorScheme.onPrimaryContainer
                 else
                     MaterialTheme.colorScheme.onErrorContainer,

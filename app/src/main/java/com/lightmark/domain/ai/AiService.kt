@@ -186,7 +186,7 @@ class AiService @Inject constructor(
 
     private fun offlinePolish(text: String): String {
         val collapsed = text.replace(Regex("\\s+"), " ").trim()
-        return if (collapsed.isNotEmpty() && !collapsed.endsWith(Regex("[。！？.!?]"))) {
+        return if (collapsed.isNotEmpty() && !Regex("[。！？.!?]$").containsMatchIn(collapsed)) {
             "$collapsed。"
         } else collapsed
     }

@@ -31,7 +31,11 @@ class CategoriesViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val counts: StateFlow<Map<String, Int>> = todoDao.getAllTodos()
-        .map { list -> list.groupBy { it.categoryId }.mapValues { it.value.size } }
+        .map { list ->
+            list.mapNotNull { it.categoryId }
+                .groupingBy { it }
+                .eachCount()
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     fun addCategory(name: String, color: Long) {

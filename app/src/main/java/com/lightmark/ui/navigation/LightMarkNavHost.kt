@@ -1,6 +1,7 @@
 package com.lightmark.ui.navigation
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -26,7 +27,7 @@ import com.lightmark.icons.IconProvider
 import com.lightmark.icons.LightMarkIcon
 
 /**
- * Çá¿Ìµ¼º½Â·ÓÉ¶¨Òå
+ * è½»åˆ»å¯¼èˆªè·¯ç”±å®šä¹‰
  */
 object Routes {
     const val HOME = "home"
@@ -41,10 +42,10 @@ object Routes {
 }
 
 /**
- * Çá¿ÌÖ÷µ¼º½ÈİÆ÷
+ * è½»åˆ»ä¸»å¯¼èˆªå®¹å™¨
  *
- * Ê¹ÓÃ Jetpack Navigation Compose£¬Ò³Ãæ¼äÇĞ»»´ø»¬¶¯ + µ­Èëµ­³ö¶¯»­¡£
- * µ×²¿µ¼º½À¸£º´ı°ì / Í³¼Æ / AI / ÉèÖÃ¡£
+ * ä½¿ç”¨ Jetpack Navigation Composeï¼Œé¡µé¢é—´åˆ‡æ¢å¸¦æ»‘åŠ¨ + æ·¡å…¥æ·¡å‡ºåŠ¨ç”»ã€‚
+ * åº•éƒ¨å¯¼èˆªæ ï¼šå¾…åŠ / ç»Ÿè®¡ / AI / è®¾ç½®ã€‚
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,7 +58,7 @@ fun LightMarkNavHost(
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
 
-    // µ×²¿µ¼º½À¸Õ¹Ê¾µÄÒ³Ãæ
+    // åº•éƒ¨å¯¼èˆªæ å±•ç¤ºçš„é¡µé¢
     val showBottomBar = currentRoute in listOf(Routes.HOME, Routes.STATS, Routes.AI)
 
     Scaffold(
@@ -89,7 +90,7 @@ fun LightMarkNavHost(
                     com.lightmark.icons.LightMarkIcon(
                         provider = homeViewModel.currentIconProvider,
                         icon = { add },
-                        contentDescription = "Ìí¼Ó´ı°ì"
+                        contentDescription = "æ·»åŠ å¾…åŠ"
                     )
                 }
             }
@@ -170,9 +171,9 @@ fun LightMarkNavHost(
 }
 
 /**
- * Çá¿Ìµ×²¿µ¼º½À¸
+ * è½»åˆ»åº•éƒ¨å¯¼èˆªæ 
  *
- * Material 3 NavigationBar£¬Ô²½ÇÉè¼Æ£¬Ğü¸¡ÔÚÆÁÄ»µ×²¿¡£
+ * Material 3 NavigationBarï¼Œåœ†è§’è®¾è®¡ï¼Œæ‚¬æµ®åœ¨å±å¹•åº•éƒ¨ã€‚
  */
 @Composable
 fun LightMarkBottomBar(
@@ -186,14 +187,14 @@ fun LightMarkBottomBar(
         BottomItem(
             selected = currentRoute == Routes.HOME,
             onClick = { onNavigate(Routes.HOME) },
-            icon = { LightMarkIcon(provider = com.lightmark.icons.MaterialIconProvider, icon = { home }, contentDescription = "´ı°ì") },
-            label = "´ı°ì"
+            icon = { LightMarkIcon(provider = com.lightmark.icons.MaterialIconProvider, icon = { home }, contentDescription = "å¾…åŠ") },
+            label = "å¾…åŠ"
         )
         BottomItem(
             selected = currentRoute == Routes.STATS,
             onClick = { onNavigate(Routes.STATS) },
-            icon = { Icon(Icons.Filled.BarChart, contentDescription = "Í³¼Æ") },
-            label = "Í³¼Æ"
+            icon = { Icon(Icons.Filled.BarChart, contentDescription = "ç»Ÿè®¡") },
+            label = "ç»Ÿè®¡"
         )
         BottomItem(
             selected = currentRoute == Routes.AI,
@@ -204,8 +205,8 @@ fun LightMarkBottomBar(
         BottomItem(
             selected = currentRoute == Routes.SETTINGS,
             onClick = { onNavigate(Routes.SETTINGS) },
-            icon = { LightMarkIcon(provider = com.lightmark.icons.MaterialIconProvider, icon = { settings }, contentDescription = "ÉèÖÃ") },
-            label = "ÉèÖÃ"
+            icon = { LightMarkIcon(provider = com.lightmark.icons.MaterialIconProvider, icon = { settings }, contentDescription = "è®¾ç½®") },
+            label = "è®¾ç½®"
         )
     }
 }

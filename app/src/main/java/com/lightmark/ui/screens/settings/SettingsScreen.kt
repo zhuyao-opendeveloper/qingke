@@ -290,7 +290,7 @@ fun SettingsScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text("GitHub 数据同步", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                             Text(
-                                text = if (user != null) "已登录：${user.login}" else "未登录",
+                                text = user?.let { "已登录：${it.login}" } ?: "未登录",
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

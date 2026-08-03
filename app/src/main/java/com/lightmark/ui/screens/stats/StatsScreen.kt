@@ -141,7 +141,7 @@ fun StatsScreen(
 }
 
 @Composable
-private fun StatChip(label: String, value: Int, color: Color) {
+private fun RowScope.StatChip(label: String, value: Int, color: Color) {
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = color,

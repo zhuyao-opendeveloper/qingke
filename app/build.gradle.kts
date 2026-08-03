@@ -1,4 +1,4 @@
-// 轻刻 LightMark - app 模块构建脚本
+// 杞诲埢 LightMark - app 妯″潡鏋勫缓鑴氭湰
 @file:Suppress("UnstableApiUsage")
 
 plugins {
@@ -23,9 +23,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        // GitHub API Base URL（可�?BuildConfig 中访问）
+        // GitHub API Base URL锛堝彲鍦?BuildConfig 涓闂級
         buildConfigField("String", "GITHUB_API_BASE_URL", "\"https://api.github.com/\"")
-        // 默认的数据仓库名
+        // 榛樿鐨勬暟鎹粨搴撳悕
         buildConfigField("String", "GITHUB_REPO_NAME", "\"lightmark-data\"")
     }
 
@@ -125,7 +125,7 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
 
-    // 测试
+    // 娴嬭瘯
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.espresso)

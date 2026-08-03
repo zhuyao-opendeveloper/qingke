@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -97,7 +99,7 @@ fun TodoItemCard(
                 ) {
                     if (item.isPinned) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Filled.PushPin,
+                            imageVector = Icons.Filled.PushPin,
                             contentDescription = "已置顶",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(14.dp)
@@ -154,10 +156,7 @@ fun TodoItemCard(
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(
-                    imageVector = if (item.isPinned)
-                        androidx.compose.material.icons.Icons.Filled.PushPin
-                    else
-                        androidx.compose.material.icons.Icons.Outlined.PushPin,
+                    imageVector = Icons.Filled.PushPin,
                     contentDescription = "置顶",
                     tint = if (item.isPinned)
                         MaterialTheme.colorScheme.primary
