@@ -54,7 +54,7 @@ fun ToolsScreen(
             ToolCard("番茄钟", "专注计时，工作 / 休息循环", Icons.Filled.Timer) { onNavigate("pomodoro") }
             ToolCard("闹钟", "设置提醒闹钟，到点响铃", Icons.Filled.Alarm) { onNavigate("alarm") }
             ToolCard("收集箱", "快速记录灵感与待办", Icons.Filled.Inbox) { onNavigate("inbox") }
-            ToolCard("日历", "日 / 月 / 年视图查看待办", Icons.Filled.CalendarMonth) { onNavigate("calendar") }
+            ToolCard("添加日历", "日 / 月 / 年视图查看待办", Icons.Filled.CalendarMonth) { onNavigate("calendar") }
         }
     }
 }

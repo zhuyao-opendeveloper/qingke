@@ -32,7 +32,7 @@ import com.lightmark.ui.theme.Dimens
 import java.util.Calendar
 
 /**
- * 铁架日历
+ * 添加日历
  *
  * 三种视图：
  * - 日视图：单日待办明细
@@ -301,7 +301,7 @@ private fun MonthView(
         }
         Spacer(Modifier.height(Dimens.xs))
 
-        // 6 行 × 7 列铁架网格
+        // 6 行 × 7 列网格
         val totalCells = 42
         Column(
             modifier = Modifier
