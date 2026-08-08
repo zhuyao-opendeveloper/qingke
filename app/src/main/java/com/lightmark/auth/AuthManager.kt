@@ -25,7 +25,8 @@ import javax.inject.Singleton
 @Singleton
 class AuthManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val gitHubApiService: GitHubApiService
+    private val gitHubApiService: GitHubApiService,
+    private val tokenHolder: TokenHolder
 ) {
     companion object {
         private const val PREFS_NAME = "lightmark_encrypted_prefs"
@@ -60,6 +61,8 @@ class AuthManager @Inject constructor(
     init {
         // 初始化时检查是否有保存的 token
         val savedToken = getToken()
+        // 同步到 TokenHolder，确保拦截器能立即带上 Authorization 头
+        tokenHolder.token = savedToken
         if (!savedToken.isNullOrBlank()) {
             val login = encryptedPrefs.getString(KEY_USER_LOGIN, null)
             val name = encryptedPrefs.getString(KEY_USER_NAME, null)
@@ -86,6 +89,9 @@ class AuthManager @Inject constructor(
     suspend fun loginWithToken(token: String): Result<GitHubUser> {
         _authState.value = AuthState.Loading
         return runCatching {
+            // 先写入 TokenHolder，否则拦截器在校验请求里仍然不带 Authorization 头，
+            // GitHub 的 /user 接口会返回 401（这就是之前一直登录失败的根因）
+            tokenHolder.token = token
             val userDto = gitHubApiService.getCurrentUser()
             val user = userDto.toDomain()
 
@@ -97,6 +103,8 @@ class AuthManager @Inject constructor(
             _authState.value = AuthState.Authenticated
             user
         }.onFailure {
+            // 校验失败：清掉刚才临时写入的 token，避免带着无效 token 发后续请求
+            tokenHolder.token = null
             _authState.value = AuthState.Error(it.message ?: "登录失败")
         }
     }
@@ -116,6 +124,8 @@ class AuthManager @Inject constructor(
      * 退出登录
      */
     fun logout() {
+        // 清除内存中的 token，拦截器随即停止携带 Authorization 头
+        tokenHolder.token = null
         encryptedPrefs.edit()
             .remove(KEY_GITHUB_TOKEN)
             .remove(KEY_USER_LOGIN)
@@ -140,6 +150,8 @@ class AuthManager @Inject constructor(
     // --- 私有方法 ---
 
     private fun saveToken(token: String) {
+        // 同步到 TokenHolder，保证后续所有 GitHub 请求都带鉴权头
+        tokenHolder.token = token
         encryptedPrefs.edit()
             .putString(KEY_GITHUB_TOKEN, token)
             .apply()

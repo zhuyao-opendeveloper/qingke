@@ -9,6 +9,7 @@ import com.lightmark.data.local.LightMarkDatabase
 import com.lightmark.data.local.dao.CategoryDao
 import com.lightmark.data.local.dao.TodoDao
 import com.lightmark.data.remote.GitHubApiService
+import com.lightmark.auth.TokenHolder
 import com.lightmark.data.remote.GitHubAuthInterceptor
 import com.lightmark.data.repository.TodoRepository
 import com.lightmark.data.repository.TodoRepositoryImpl
@@ -79,10 +80,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAuthInterceptor(): GitHubAuthInterceptor {
+    fun provideTokenHolder(): TokenHolder = TokenHolder()
+
+    @Provides
+    @Singleton
+    fun provideAuthInterceptor(tokenHolder: TokenHolder): GitHubAuthInterceptor {
         return GitHubAuthInterceptor {
-            // Token 从 AuthManager 获取，通过 SharedPreferences 传入
-            null
+            // 从 TokenHolder 读取当前 token（登录/恢复时由 AuthManager 写入）
+            tokenHolder.token
         }
     }
 
