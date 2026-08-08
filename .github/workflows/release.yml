@@ -38,14 +38,6 @@ jobs:
           echo "---- keytool -list ----"
           cat diag.txt
 
-      - name: Upload diag
-        uses: softprops/action-gh-release@v2
-        with:
-          files: diag.txt
-          fail_on_unmatched_files: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -60,12 +52,26 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: gradle assembleRelease --no-daemon --stacktrace
+        run: gradle assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log
 
-      - name: Upload APK to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: app/build/outputs/apk/release/*.apk
-          fail_on_unmatched_files: false
+      - name: Report diagnostics to release body
+        if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REL_ID: ${{ github.event.release.id }}
+        run: |
+          {
+            echo "## CI Diagnostics"
+            echo ""
+            echo "### keytool -list"
+            echo '```'
+            cat diag.txt
+            echo '```'
+            echo ""
+            echo "### gradle assembleRelease (tail)"
+            echo '```'
+            tail -50 build.log
+            echo '```'
+          } > report.md
+          BODY=$(python3 -c 'import sys,json; print(json.dumps(open("report.md").read()))')
+          curl -s -X PATCH -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" -d "{\"body\":$BODY}" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/$REL_ID"
