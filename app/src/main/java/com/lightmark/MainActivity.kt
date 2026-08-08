@@ -12,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import com.lightmark.auth.AuthManager
 import com.lightmark.auth.AuthState
@@ -76,13 +77,16 @@ class MainActivity : ComponentActivity() {
                 themeMode = ThemeMode.fromString(settings.themeMode),
                 seedColor = settings.seedColor,
                 iconPack = IconPack.fromString(settings.iconPack),
-                useDynamicColor = settings.useDynamicColor
+                useDynamicColor = settings.useDynamicColor,
+                themeId = settings.themeId,
+                customPrimary = settings.customPrimary,
+                backgroundImageUri = settings.backgroundImageUri
             )
 
             val showPrivacy = !settings.privacyAccepted
 
             LightMarkTheme(appSettings = appSettings) {
-                Surface(modifier = Modifier.fillMaxSize()) {
+                Surface(modifier = Modifier.fillMaxSize(), color = Color.Transparent) {
                     when {
                         showPrivacy -> {
                             PrivacyDialog(

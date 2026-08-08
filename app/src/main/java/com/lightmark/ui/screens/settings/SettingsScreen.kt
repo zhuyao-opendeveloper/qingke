@@ -1,9 +1,12 @@
 package com.lightmark.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Category
@@ -14,11 +17,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lightmark.domain.model.IconPack
 import com.lightmark.domain.model.ThemeMode
@@ -26,6 +32,8 @@ import com.lightmark.icons.LightMarkIcon
 import com.lightmark.icons.MaterialIconProvider
 import com.lightmark.ui.components.LightMarkCard
 import com.lightmark.ui.theme.Dimens
+import com.lightmark.ui.theme.PRESET_NAMES
+import com.lightmark.ui.theme.PRESET_ORDER
 
 /**
  * 设置页面
@@ -53,7 +61,19 @@ fun SettingsScreen(
     var showIconPackDialog by remember { mutableStateOf(false) }
     var showKey by remember { mutableStateOf(false) }
 
+    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { viewModel.setBackgroundImageUri(it.toString()) }
+    }
+
+    // 自定义主题色可选色板
+    val customColors = listOf(
+        0xFF6750A4, 0xFF2E9E7B, 0xFF2D6FE0, 0xFFE1609A,
+        0xFF4B7A2E, 0xFF5B6BB5, 0xFFE6852C, 0xFFD32F2F,
+        0xFF00897B, 0xFF3949AB
+    )
+
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text(text = "设置", fontWeight = FontWeight.Bold) },
@@ -146,6 +166,86 @@ fun SettingsScreen(
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // ====== 主题与背景 ======
+            SectionTitle("主题与背景")
+            LightMarkCard(modifier = Modifier.fillMaxWidth()) {
+                Column {
+                    Text("内置主题", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                        PRESET_ORDER.forEach { id ->
+                            FilterChip(
+                                selected = settings.themeId == id && settings.customPrimary == null,
+                                onClick = {
+                                    viewModel.setThemeId(id)
+                                    viewModel.setCustomPrimary(null)
+                                },
+                                label = {
+                                    Text(PRESET_NAMES[id] ?: id, fontSize = 13.sp)
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimens.md))
+                    Text("自定义主题色", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
+                        customColors.forEach { c ->
+                            val selected = settings.customPrimary == c
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(c))
+                                    .border(
+                                        2.dp,
+                                        if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                        CircleShape
+                                    )
+                                    .clickable { viewModel.setCustomPrimary(c) }
+                            )
+                        }
+                        // 恢复默认（跟随内置主题）
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .border(2.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                                .clickable { viewModel.setCustomPrimary(null) },
+                            contentAlignment = Alignment.Center
+                        ) { Text("默认", fontSize = 11.sp) }
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimens.md))
+                    Text("背景图片", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                        Button(
+                            onClick = { pickImage.launch("image/*") },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("选择背景图片") }
+                        OutlinedButton(
+                            onClick = { viewModel.setBackgroundImageUri("") },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("清除背景") }
+                    }
+                    if (settings.backgroundImageUri.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(Dimens.sm))
+                        Text(
+                            "已设置自定义背景图片（将应用于全局）",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 

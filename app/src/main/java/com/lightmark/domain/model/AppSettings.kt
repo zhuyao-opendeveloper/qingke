@@ -15,7 +15,13 @@ data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val seedColor: Long = 0xFF6750A4, // Material 3 默认种子色
     val iconPack: IconPack = IconPack.MATERIAL,
-    val useDynamicColor: Boolean = true
+    val useDynamicColor: Boolean = true,
+    /** 内置主题 id（见 PRESET_SEEDS），默认 DEFAULT */
+    val themeId: String = "DEFAULT",
+    /** 用户自定义主题色（覆盖内置主题），为 null 时使用 themeId */
+    val customPrimary: Long? = null,
+    /** 用户自定义背景图片 Uri，为空表示使用主题色淡渐变背景 */
+    val backgroundImageUri: String = ""
 )
 
 /**

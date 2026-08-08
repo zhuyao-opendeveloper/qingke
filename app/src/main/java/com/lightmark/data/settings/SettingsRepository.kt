@@ -37,6 +37,9 @@ class SettingsRepository @Inject constructor(
             seedColor = prefs[KEY_SEED_COLOR] ?: 0xFF6750A4,
             iconPack = prefs[KEY_ICON_PACK] ?: "MATERIAL",
             useDynamicColor = prefs[KEY_USE_DYNAMIC_COLOR] ?: true,
+            themeId = prefs[KEY_THEME_ID] ?: "DEFAULT",
+            customPrimary = prefs[KEY_CUSTOM_PRIMARY],
+            backgroundImageUri = prefs[KEY_BG_IMAGE_URI] ?: "",
             openClawEnabled = prefs[KEY_OPENCLAW_ENABLED] ?: false,
             openClawBaseUrl = prefs[KEY_OPENCLAW_BASE_URL] ?: "https://api.openclaw.ai/v1/",
             openClawApiKey = prefs[KEY_OPENCLAW_API_KEY] ?: "",
@@ -71,6 +74,19 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[KEY_USE_DYNAMIC_COLOR] = enabled }
     }
 
+    // ===== 主题 / 背景 =====
+    suspend fun setThemeId(id: String) {
+        dataStore.edit { it[KEY_THEME_ID] = id }
+    }
+
+    suspend fun setCustomPrimary(color: Long?) {
+        dataStore.edit { if (color == null) it.remove(KEY_CUSTOM_PRIMARY) else it[KEY_CUSTOM_PRIMARY] = color }
+    }
+
+    suspend fun setBackgroundImageUri(uri: String) {
+        dataStore.edit { it[KEY_BG_IMAGE_URI] = uri }
+    }
+
     // ===== OpenClaw =====
     suspend fun setOpenClawEnabled(enabled: Boolean) {
         dataStore.edit { it[KEY_OPENCLAW_ENABLED] = enabled }
@@ -99,6 +115,9 @@ class SettingsRepository @Inject constructor(
         private val KEY_SEED_COLOR = longPreferencesKey("seed_color")
         private val KEY_ICON_PACK = stringPreferencesKey("icon_pack")
         private val KEY_USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
+        private val KEY_THEME_ID = stringPreferencesKey("theme_id")
+        private val KEY_CUSTOM_PRIMARY = longPreferencesKey("custom_primary")
+        private val KEY_BG_IMAGE_URI = stringPreferencesKey("bg_image_uri")
         private val KEY_OPENCLAW_ENABLED = booleanPreferencesKey("openclaw_enabled")
         private val KEY_OPENCLAW_BASE_URL = stringPreferencesKey("openclaw_base_url")
         private val KEY_OPENCLAW_API_KEY = stringPreferencesKey("openclaw_api_key")
@@ -117,6 +136,9 @@ data class LightMarkSettings(
     val seedColor: Long = 0xFF6750A4,
     val iconPack: String = "MATERIAL",
     val useDynamicColor: Boolean = true,
+    val themeId: String = "DEFAULT",
+    val customPrimary: Long? = null,
+    val backgroundImageUri: String = "",
     val openClawEnabled: Boolean = false,
     val openClawBaseUrl: String = "https://api.openclaw.ai/v1/",
     val openClawApiKey: String = "",

@@ -46,6 +46,18 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.setUseDynamicColor(enabled) }
     }
 
+    fun setThemeId(id: String) {
+        viewModelScope.launch { settingsRepository.setThemeId(id) }
+    }
+
+    fun setCustomPrimary(color: Long?) {
+        viewModelScope.launch { settingsRepository.setCustomPrimary(color) }
+    }
+
+    fun setBackgroundImageUri(uri: String) {
+        viewModelScope.launch { settingsRepository.setBackgroundImageUri(uri) }
+    }
+
     fun setIconPack(pack: IconPack) {
         viewModelScope.launch { settingsRepository.setIconPack(pack.name) }
     }
