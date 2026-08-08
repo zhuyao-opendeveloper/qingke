@@ -28,6 +28,12 @@ fun MarkdownText(
     BasicText(text = annotated, modifier = modifier)
 }
 
+private fun AnnotatedString.Builder.styled(style: SpanStyle, content: String) {
+    pushStyle(style)
+    append(content)
+    pop()
+}
+
 private fun parseMarkdown(text: String, baseColor: Color, primaryColor: Color): AnnotatedString {
     val builder = AnnotatedString.Builder()
     var i = 0
@@ -37,9 +43,10 @@ private fun parseMarkdown(text: String, baseColor: Color, primaryColor: Color): 
             text.startsWith("**", i) -> {
                 val end = text.indexOf("**", i + 2)
                 if (end != -1) {
-                    builder.withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = baseColor)) {
-                        append(text.substring(i + 2, end))
-                    }
+                    builder.styled(
+                        SpanStyle(fontWeight = FontWeight.Bold, color = baseColor),
+                        text.substring(i + 2, end)
+                    )
                     i = end + 2
                 } else {
                     builder.append(text[i]); i++
@@ -48,9 +55,10 @@ private fun parseMarkdown(text: String, baseColor: Color, primaryColor: Color): 
             text.startsWith("`", i) -> {
                 val end = text.indexOf("`", i + 1)
                 if (end != -1) {
-                    builder.withStyle(
-                        SpanStyle(fontFamily = FontFamily.Monospace, color = primaryColor)
-                    ) { append(text.substring(i + 1, end)) }
+                    builder.styled(
+                        SpanStyle(fontFamily = FontFamily.Monospace, color = primaryColor),
+                        text.substring(i + 1, end)
+                    )
                     i = end + 1
                 } else {
                     builder.append(text[i]); i++
@@ -59,9 +67,10 @@ private fun parseMarkdown(text: String, baseColor: Color, primaryColor: Color): 
             text.startsWith("*", i) -> {
                 val end = text.indexOf("*", i + 1)
                 if (end != -1 && end > i + 1) {
-                    builder.withStyle(SpanStyle(fontStyle = FontStyle.Italic, color = baseColor)) {
-                        append(text.substring(i + 1, end))
-                    }
+                    builder.styled(
+                        SpanStyle(fontStyle = FontStyle.Italic, color = baseColor),
+                        text.substring(i + 1, end)
+                    )
                     i = end + 1
                 } else {
                     builder.append(text[i]); i++
@@ -69,13 +78,13 @@ private fun parseMarkdown(text: String, baseColor: Color, primaryColor: Color): 
             }
             text.startsWith("[", i) -> {
                 val close = text.indexOf("]", i)
-                val paren = text.indexOf("(", close + 1)
-                val endp = text.indexOf(")", paren + 1)
+                val paren = if (close == -1) -1 else text.indexOf("(", close + 1)
+                val endp = if (paren == -1) -1 else text.indexOf(")", paren + 1)
                 if (close != -1 && paren == close + 1 && endp != -1) {
-                    val label = text.substring(i + 1, close)
-                    builder.withStyle(
-                        SpanStyle(color = primaryColor, textDecoration = TextDecoration.Underline)
-                    ) { append(label) }
+                    builder.styled(
+                        SpanStyle(color = primaryColor, textDecoration = TextDecoration.Underline),
+                        text.substring(i + 1, close)
+                    )
                     i = endp + 1
                 } else {
                     builder.append(text[i]); i++
