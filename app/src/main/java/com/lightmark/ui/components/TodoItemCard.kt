@@ -19,9 +19,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lightmark.domain.model.Priority
+import com.lightmark.domain.model.Recurrence
 import com.lightmark.domain.model.TodoItem
 import com.lightmark.icons.IconProvider
 import com.lightmark.icons.LightMarkIcon
+import com.lightmark.ui.components.MarkdownText
 import com.lightmark.ui.theme.Dimens
 
 /**
@@ -50,6 +52,11 @@ fun TodoItemCard(
     onDelete: () -> Unit,
     iconProvider: IconProvider,
     onPin: () -> Unit = {},
+    subtaskCount: Int = 0,
+    onArchive: () -> Unit = {},
+    onRestore: () -> Unit = {},
+    showArchive: Boolean = false,
+    showRestore: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -119,20 +126,16 @@ fun TodoItemCard(
                     )
                 }
 
-                // 描述
+                // 描述（Markdown 轻量渲染）
                 if (item.description.isNotBlank()) {
-                    Text(
+                    MarkdownText(
                         text = item.description,
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 }
 
-                // 底部信息（标签、截止日期）
-                if (item.tags.isNotEmpty() || item.dueDate != null) {
+                // 底部信息（标签、截止日期、子任务、阻塞、重复）
+                if (item.tags.isNotEmpty() || item.dueDate != null || subtaskCount > 0 || item.isBlocked || !item.recurrenceRule.isNullOrBlank()) {
                     Row(
                         modifier = Modifier.padding(top = Dimens.sm),
                         horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
@@ -144,38 +147,81 @@ fun TodoItemCard(
                         if (item.dueDate != null) {
                             DueDateBadge(timestamp = item.dueDate)
                         }
+                        if (subtaskCount > 0) {
+                            TagChip(text = "子任务 $subtaskCount")
+                        }
+                        if (item.isBlocked) {
+                            TagChip(text = "阻塞")
+                        }
+                        if (!item.recurrenceRule.isNullOrBlank() && item.recurrenceRule != Recurrence.NONE) {
+                            TagChip(text = Recurrence.label(item.recurrenceRule))
+                        }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.width(Dimens.sm))
 
-            // 置顶按钮
-            IconButton(
-                onClick = onPin,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.PushPin,
-                    contentDescription = "置顶",
-                    tint = if (item.isPinned)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
-            }
+            if (showRestore) {
+                // 回收站视图：恢复
+                IconButton(onClick = onRestore, modifier = Modifier.size(32.dp)) {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = "恢复",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                // 回收站视图：永久删除
+                IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                    LightMarkIcon(
+                        provider = iconProvider,
+                        icon = { delete },
+                        contentDescription = "永久删除",
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
+                    )
+                }
+            } else {
+                // 置顶按钮
+                IconButton(
+                    onClick = onPin,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PushPin,
+                        contentDescription = "置顶",
+                        tint = if (item.isPinned)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                }
 
-            // 删除按钮
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(32.dp)
-            ) {
-                LightMarkIcon(
-                    provider = iconProvider,
-                    icon = { delete },
-                    contentDescription = "删除",
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
-                )
+                // 归档按钮（活跃 / 已归档视图）
+                if (showArchive) {
+                    IconButton(
+                        onClick = onArchive,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Bookmark,
+                            contentDescription = "归档",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
+                }
+
+                // 删除按钮（移入回收站）
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    LightMarkIcon(
+                        provider = iconProvider,
+                        icon = { delete },
+                        contentDescription = "删除",
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
+                    )
+                }
             }
         }
     }
@@ -191,6 +237,7 @@ fun PriorityIndicator(priority: Priority) {
         Priority.MEDIUM -> Color(0xFFFF9800)  // 橙色
         Priority.HIGH -> Color(0xFFF44336)    // 红色
         Priority.URGENT -> Color(0xFF9C27B0)  // 紫色
+        Priority.IDLE -> Color(0xFF9E9E9E)    // 灰色（空闲）
     }
     Box(
         modifier = Modifier

@@ -19,6 +19,26 @@ interface TodoDao {
     @Query("SELECT * FROM todos ORDER BY updatedAt DESC")
     fun getAllTodos(): Flow<List<TodoEntity>>
 
+    /** 活跃待办：未删除、未归档（首页默认列表） */
+    @Query("SELECT * FROM todos WHERE isDeleted = 0 AND isArchived = 0 ORDER BY updatedAt DESC")
+    fun getActiveTodos(): Flow<List<TodoEntity>>
+
+    /** 已归档待办 */
+    @Query("SELECT * FROM todos WHERE isArchived = 1 AND isDeleted = 0 ORDER BY updatedAt DESC")
+    fun getArchivedTodos(): Flow<List<TodoEntity>>
+
+    /** 回收站（已软删除） */
+    @Query("SELECT * FROM todos WHERE isDeleted = 1 ORDER BY deletedAt DESC")
+    fun getTrashTodos(): Flow<List<TodoEntity>>
+
+    /** 某个父任务的直接子任务 */
+    @Query("SELECT * FROM todos WHERE parentId = :parentId AND isDeleted = 0 ORDER BY createdAt ASC")
+    fun getSubtasks(parentId: String): Flow<List<TodoEntity>>
+
+    /** 按生命周期状态筛选 */
+    @Query("SELECT * FROM todos WHERE status = :status AND isDeleted = 0 ORDER BY updatedAt DESC")
+    fun getTodosByStatus(status: String): Flow<List<TodoEntity>>
+
     /** 根据ID获取单条待办 */
     @Query("SELECT * FROM todos WHERE id = :id")
     suspend fun getTodoById(id: String): TodoEntity?

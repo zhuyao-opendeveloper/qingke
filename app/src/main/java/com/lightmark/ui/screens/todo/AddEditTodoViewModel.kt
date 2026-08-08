@@ -11,6 +11,7 @@ import com.lightmark.domain.ai.AiService
 import com.lightmark.domain.model.Category
 import com.lightmark.domain.model.Priority
 import com.lightmark.domain.model.TodoItem
+import com.lightmark.domain.model.TodoStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -60,6 +61,26 @@ class AddEditTodoViewModel @Inject constructor(
     private val _dueDate = MutableStateFlow<Long?>(null)
     val dueDate: StateFlow<Long?> = _dueDate.asStateFlow()
 
+    private val _startDate = MutableStateFlow<Long?>(null)
+    val startDate: StateFlow<Long?> = _startDate.asStateFlow()
+
+    private val _isBlocked = MutableStateFlow(false)
+    val isBlocked: StateFlow<Boolean> = _isBlocked.asStateFlow()
+
+    private val _status = MutableStateFlow(TodoStatus.ACTIVE)
+    val status: StateFlow<TodoStatus> = _status.asStateFlow()
+
+    private val _recurrenceRule = MutableStateFlow<String?>(null)
+    val recurrenceRule: StateFlow<String?> = _recurrenceRule.asStateFlow()
+
+    private val _parentId = MutableStateFlow<String?>(null)
+    val parentId: StateFlow<String?> = _parentId.asStateFlow()
+
+    /** 可作为父任务的候选（排除已删除与自身） */
+    val parentCandidates: StateFlow<List<TodoItem>> = todoDao.getAllTodos()
+        .map { list -> list.filter { !it.isDeleted }.map { it.toDomain() } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     private val _reminderEnabled = MutableStateFlow(true)
     val reminderEnabled: StateFlow<Boolean> = _reminderEnabled.asStateFlow()
 
@@ -95,6 +116,11 @@ class AddEditTodoViewModel @Inject constructor(
             _categoryId.value = todo.categoryId
             _isPinned.value = todo.isPinned
             _dueDate.value = todo.dueDate
+            _startDate.value = todo.startDate
+            _isBlocked.value = todo.isBlocked
+            _status.value = TodoStatus.fromString(todo.status)
+            _recurrenceRule.value = todo.recurrenceRule
+            _parentId.value = todo.parentId
         }
     }
 
@@ -104,6 +130,11 @@ class AddEditTodoViewModel @Inject constructor(
     fun setCategoryId(id: String?) { _categoryId.value = id }
     fun setPinned(pinned: Boolean) { _isPinned.value = pinned }
     fun setDueDate(ts: Long?) { _dueDate.value = ts }
+    fun setStartDate(ts: Long?) { _startDate.value = ts }
+    fun setBlocked(blocked: Boolean) { _isBlocked.value = blocked }
+    fun setStatus(s: TodoStatus) { _status.value = s }
+    fun setRecurrenceRule(rule: String?) { _recurrenceRule.value = rule }
+    fun setParentId(id: String?) { _parentId.value = id }
     fun setReminderEnabled(enabled: Boolean) { _reminderEnabled.value = enabled }
 
     fun addTag(tag: String) {
@@ -188,6 +219,14 @@ class AddEditTodoViewModel @Inject constructor(
                     categoryId = _categoryId.value,
                     isPinned = _isPinned.value,
                     dueDate = _dueDate.value,
+                    startDate = _startDate.value,
+                    isBlocked = _isBlocked.value,
+                    status = _status.value.name,
+                    isArchived = existing?.isArchived ?: false,
+                    isDeleted = existing?.isDeleted ?: false,
+                    deletedAt = existing?.deletedAt,
+                    parentId = _parentId.value,
+                    recurrenceRule = _recurrenceRule.value,
                     updatedAt = now
                 )
                 todoDao.updateTodo(updated)
@@ -201,6 +240,11 @@ class AddEditTodoViewModel @Inject constructor(
                     categoryId = _categoryId.value,
                     isPinned = _isPinned.value,
                     dueDate = _dueDate.value,
+                    startDate = _startDate.value,
+                    isBlocked = _isBlocked.value,
+                    status = _status.value.name,
+                    parentId = _parentId.value,
+                    recurrenceRule = _recurrenceRule.value,
                     createdAt = now,
                     updatedAt = now
                 )

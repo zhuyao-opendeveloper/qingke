@@ -11,6 +11,7 @@ import com.lightmark.data.settings.SettingsRepository
 import com.lightmark.domain.model.Category
 import com.lightmark.domain.model.IconPack
 import com.lightmark.domain.model.Priority
+import com.lightmark.domain.model.Recurrence
 import com.lightmark.domain.model.TodoItem
 import com.lightmark.icons.IconProvider
 import com.lightmark.icons.getIconProvider
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -66,6 +68,20 @@ class HomeViewModel @Inject constructor(
     private val _lastDeleted = MutableStateFlow<TodoItem?>(null)
     val lastDeleted: StateFlow<TodoItem?> = _lastDeleted.asStateFlow()
 
+    /** 当前列表视图：待办 / 已归档 / 回收站 */
+    private val _viewMode = MutableStateFlow(HomeViewMode.ACTIVE)
+    val viewMode: StateFlow<HomeViewMode> = _viewMode.asStateFlow()
+
+    /** 根据视图模式选择底层数据源 */
+    private val baseTodos: kotlinx.coroutines.flow.Flow<List<TodoEntity>> =
+        _viewMode.flatMapLatest { mode ->
+            when (mode) {
+                HomeViewMode.ACTIVE -> todoDao.getActiveTodos()
+                HomeViewMode.ARCHIVED -> todoDao.getArchivedTodos()
+                HomeViewMode.TRASH -> todoDao.getTrashTodos()
+            }
+        }
+
     init {
         viewModelScope.launch {
             settingsRepository.settings.map { it.iconPack }.collect { pack ->
@@ -78,8 +94,16 @@ class HomeViewModel @Inject constructor(
         .map { list -> list.map { entity -> entity.toDomain() } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    /** 每个父任务的直接子任务数量（用于卡片徽标，#3） */
+    val subtaskCounts: StateFlow<Map<String, Int>> = todoDao.getAllTodos()
+        .map { list ->
+            list.filter { it.parentId != null && !it.isDeleted }
+                .groupingBy { it.parentId!! }.eachCount()
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
     val todos: StateFlow<List<TodoItem>> = combine(
-        todoDao.getAllTodos(),
+        baseTodos,
         _searchQuery,
         _selectedCategoryId,
         _sortOrder
@@ -113,13 +137,31 @@ class HomeViewModel @Inject constructor(
     fun toggleComplete(todoId: String) {
         viewModelScope.launch {
             val todo = todoDao.getTodoById(todoId) ?: return@launch
+            val willComplete = !todo.isCompleted
             todoDao.updateTodo(
                 todo.copy(
-                    isCompleted = !todo.isCompleted,
-                    completedAt = if (todo.isCompleted) null else System.currentTimeMillis(),
+                    isCompleted = willComplete,
+                    completedAt = if (willComplete) System.currentTimeMillis() else null,
                     updatedAt = System.currentTimeMillis()
                 )
             )
+            // 重复任务：完成后自动生成下一次（#13）
+            if (willComplete && !todo.recurrenceRule.isNullOrBlank() && todo.recurrenceRule != Recurrence.NONE) {
+                val base = todo.dueDate ?: System.currentTimeMillis()
+                val next = Recurrence.nextOccurrence(todo.recurrenceRule, base)
+                if (next != null) {
+                    todoDao.insertTodo(
+                        todo.copy(
+                            id = TodoItem.generateId(),
+                            isCompleted = false,
+                            completedAt = null,
+                            dueDate = next,
+                            createdAt = System.currentTimeMillis(),
+                            updatedAt = System.currentTimeMillis()
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -136,8 +178,55 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val entity = todoDao.getTodoById(todoId) ?: return@launch
             _lastDeleted.value = entity.toDomain()
+            // 软删除：移入回收站（#25）
+            todoDao.updateTodo(
+                entity.copy(
+                    isDeleted = true,
+                    deletedAt = System.currentTimeMillis(),
+                    isArchived = false,
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+        }
+    }
+
+    /** 永久删除（仅回收站视图使用） */
+    fun hardDelete(todoId: String) {
+        viewModelScope.launch {
             todoDao.deleteTodoById(todoId)
         }
+    }
+
+    /** 归档任务（#25） */
+    fun archiveTodo(todoId: String) {
+        viewModelScope.launch {
+            val entity = todoDao.getTodoById(todoId) ?: return@launch
+            todoDao.updateTodo(
+                entity.copy(isArchived = true, isDeleted = false, updatedAt = System.currentTimeMillis())
+            )
+        }
+    }
+
+    /** 取消归档 */
+    fun unarchiveTodo(todoId: String) {
+        viewModelScope.launch {
+            val entity = todoDao.getTodoById(todoId) ?: return@launch
+            todoDao.updateTodo(entity.copy(isArchived = false, updatedAt = System.currentTimeMillis()))
+        }
+    }
+
+    /** 从回收站恢复 */
+    fun restoreTodo(todoId: String) {
+        viewModelScope.launch {
+            val entity = todoDao.getTodoById(todoId) ?: return@launch
+            todoDao.updateTodo(
+                entity.copy(isDeleted = false, deletedAt = null, updatedAt = System.currentTimeMillis())
+            )
+        }
+    }
+
+    fun setViewMode(mode: HomeViewMode) {
+        _viewMode.value = mode
     }
 
     fun undoDelete() {
@@ -195,4 +284,11 @@ enum class SortOrder {
     PRIORITY_DESC,
     DUE_DATE_ASC,
     ALPHABETICAL
+}
+
+/** 首页列表视图模式（#25 归档/回收站） */
+enum class HomeViewMode {
+    ACTIVE,     // 待办（活跃）
+    ARCHIVED,   // 已归档
+    TRASH       // 回收站
 }

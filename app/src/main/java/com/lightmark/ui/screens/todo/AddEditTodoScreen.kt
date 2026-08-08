@@ -60,6 +60,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lightmark.domain.model.Priority
+import com.lightmark.domain.model.Recurrence
+import com.lightmark.domain.model.TodoStatus
 import com.lightmark.icons.IconProvider
 import com.lightmark.icons.LightMarkIcon
 import com.lightmark.icons.MaterialIconProvider
@@ -85,6 +87,12 @@ fun AddEditTodoScreen(
     val categoryId by viewModel.categoryId.collectAsState()
     val isPinned by viewModel.isPinned.collectAsState()
     val dueDate by viewModel.dueDate.collectAsState()
+    val startDate by viewModel.startDate.collectAsState()
+    val isBlocked by viewModel.isBlocked.collectAsState()
+    val status by viewModel.status.collectAsState()
+    val recurrenceRule by viewModel.recurrenceRule.collectAsState()
+    val parentId by viewModel.parentId.collectAsState()
+    val parentCandidates by viewModel.parentCandidates.collectAsState()
     val reminderEnabled by viewModel.reminderEnabled.collectAsState()
     val aiState by viewModel.aiState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -92,6 +100,7 @@ fun AddEditTodoScreen(
 
     var tagInput by remember { mutableStateOf("") }
     var showCategoryDialog by remember { mutableStateOf(false) }
+    var showParentDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -274,6 +283,7 @@ fun AddEditTodoScreen(
                         Priority.MEDIUM -> "中"
                         Priority.HIGH -> "高"
                         Priority.URGENT -> "紧急"
+                        Priority.IDLE -> "空闲"
                     }
                     FilterChip(
                         selected = priority == p,
@@ -285,6 +295,7 @@ fun AddEditTodoScreen(
                                 Priority.MEDIUM -> MaterialTheme.colorScheme.tertiaryContainer
                                 Priority.HIGH -> MaterialTheme.colorScheme.errorContainer
                                 Priority.URGENT -> MaterialTheme.colorScheme.primaryContainer
+                                Priority.IDLE -> MaterialTheme.colorScheme.surfaceVariant
                             }
                         )
                     )
@@ -346,6 +357,110 @@ fun AddEditTodoScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f))
                 Switch(checked = reminderEnabled, onCheckedChange = { viewModel.setReminderEnabled(it) })
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 开始时间
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+            ) {
+                Icon(imageVector = Icons.Filled.Schedule, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Text("开始时间", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.width(64.dp))
+                FilledTonalButton(onClick = {
+                    showDateTimePicker(context, startDate) { ts -> viewModel.setStartDate(ts) }
+                }) {
+                    Text(if (startDate != null) DateTimeUtils.formatDateTime(startDate!!) else "设置")
+                }
+                if (startDate != null) {
+                    IconButton(onClick = { viewModel.setStartDate(null) }) {
+                        Icon(imageVector = Icons.Filled.Delete, contentDescription = "清除",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                            modifier = Modifier.size(20.dp))
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 状态
+            Text("状态", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface)
+            Spacer(modifier = Modifier.height(Dimens.sm))
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                TodoStatus.entries.forEach { s ->
+                    FilterChip(
+                        selected = status == s,
+                        onClick = { viewModel.setStatus(s) },
+                        label = {
+                            Text(
+                                when (s) {
+                                    TodoStatus.ACTIVE -> "进行中"
+                                    TodoStatus.PAUSED -> "暂停"
+                                    TodoStatus.CANCELLED -> "取消"
+                                }, fontSize = 13.sp
+                            )
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 阻塞标记
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+            ) {
+                Icon(imageVector = Icons.Filled.Schedule, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Text("被外部阻塞（暂停计时）", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f))
+                Switch(checked = isBlocked, onCheckedChange = { viewModel.setBlocked(it) })
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 重复规则
+            Text("重复", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface)
+            Spacer(modifier = Modifier.height(Dimens.sm))
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+            ) {
+                val rules = listOf<String?>(null, Recurrence.DAILY, Recurrence.WEEKLY, Recurrence.MONTHLY, "INTERVAL:3", "INTERVAL:7")
+                rules.forEach { rule ->
+                    FilterChip(
+                        selected = recurrenceRule == rule,
+                        onClick = { viewModel.setRecurrenceRule(rule) },
+                        label = { Text(Recurrence.label(rule), fontSize = 13.sp) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 父任务（子任务归属）
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+            ) {
+                Text("父任务", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.width(56.dp))
+                FilledTonalButton(onClick = { showParentDialog = true }) {
+                    val name = parentCandidates.find { it.id == parentId }?.title ?: "无（顶层任务）"
+                    Text(if (name.length > 16) name.take(16) + "…" else name)
+                }
             }
 
             Spacer(modifier = Modifier.height(Dimens.lg))
@@ -432,6 +547,29 @@ fun AddEditTodoScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showCategoryDialog = false }) { Text("取消") }
+            }
+        )
+    }
+
+    // 父任务选择弹窗
+    if (showParentDialog) {
+        AlertDialog(
+            onDismissRequest = { showParentDialog = false },
+            title = { Text("选择父任务") },
+            text = {
+                Column {
+                    CategoryOption("无（顶层任务）", parentId == null) {
+                        viewModel.setParentId(null); showParentDialog = false
+                    }
+                    parentCandidates.filter { it.id != todoId }.forEach { p ->
+                        CategoryOption(p.title, parentId == p.id) {
+                            viewModel.setParentId(p.id); showParentDialog = false
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showParentDialog = false }) { Text("取消") }
             }
         )
     }

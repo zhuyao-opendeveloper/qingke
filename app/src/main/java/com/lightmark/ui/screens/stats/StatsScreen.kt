@@ -224,6 +224,7 @@ private fun priorityLabel(p: Priority): String = when (p) {
     Priority.MEDIUM -> "中"
     Priority.HIGH -> "高"
     Priority.URGENT -> "紧急"
+    Priority.IDLE -> "空闲"
 }
 
 private fun priorityColor(p: Priority): Color = when (p) {
@@ -231,4 +232,5 @@ private fun priorityColor(p: Priority): Color = when (p) {
     Priority.MEDIUM -> Color(0xFFFF9800)
     Priority.HIGH -> Color(0xFFF44336)
     Priority.URGENT -> Color(0xFF9C27B0)
+    Priority.IDLE -> Color(0xFF9E9E9E)
 }

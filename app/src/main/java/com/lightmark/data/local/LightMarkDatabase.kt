@@ -17,7 +17,7 @@ import com.lightmark.data.local.entity.TodoEntity
  */
 @Database(
     entities = [TodoEntity::class, CategoryEntity::class, InboxEntity::class, AlarmEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class LightMarkDatabase : RoomDatabase() {

@@ -60,6 +60,8 @@ fun HomeScreen(
     val selectedCategoryId by viewModel.selectedCategoryId.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val lastDeleted by viewModel.lastDeleted.collectAsState()
+    val viewMode by viewModel.viewMode.collectAsState()
+    val subtaskCounts by viewModel.subtaskCounts.collectAsState()
     val iconProvider = viewModel.currentIconProvider
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -166,6 +168,30 @@ fun HomeScreen(
                 )
             )
 
+            // 视图切换：待办 / 已归档 / 回收站（#25）
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.lg, vertical = Dimens.xs),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+            ) {
+                HomeViewMode.entries.forEach { mode ->
+                    FilterChip(
+                        selected = viewMode == mode,
+                        onClick = { viewModel.setViewMode(mode) },
+                        label = {
+                            Text(
+                                when (mode) {
+                                    HomeViewMode.ACTIVE -> "待办"
+                                    HomeViewMode.ARCHIVED -> "已归档"
+                                    HomeViewMode.TRASH -> "回收站"
+                                }, fontSize = 13.sp
+                            )
+                        }
+                    )
+                }
+            }
+
             // 搜索栏
             AnimatedVisibility(
                 visible = isSearching,
@@ -233,7 +259,11 @@ fun HomeScreen(
                     ) {
                         item {
                             Text(
-                                text = "待办事项 (${todos.size})",
+                                text = when (viewMode) {
+                                    HomeViewMode.ACTIVE -> "待办事项 (${todos.size})"
+                                    HomeViewMode.ARCHIVED -> "已归档 (${todos.size})"
+                                    HomeViewMode.TRASH -> "回收站 (${todos.size})"
+                                },
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(
@@ -262,7 +292,8 @@ fun HomeScreen(
                                                 false
                                             }
                                             SwipeToDismissBoxValue.EndToStart -> {
-                                                viewModel.deleteTodo(todo.id)
+                                                if (viewMode == HomeViewMode.TRASH) viewModel.hardDelete(todo.id)
+                                                else viewModel.deleteTodo(todo.id)
                                                 false
                                             }
                                             else -> false
@@ -275,14 +306,25 @@ fun HomeScreen(
                                         DismissBackground(dismissState, iconProvider)
                                     },
                                     content = {
-                                        TodoItemCard(
-                                            item = todo,
-                                            onToggle = { viewModel.toggleComplete(todo.id) },
-                                            onClick = { onNavigateToEdit(todo.id) },
-                                            onDelete = { viewModel.deleteTodo(todo.id) },
-                                            onPin = { viewModel.togglePin(todo.id) },
-                                            iconProvider = iconProvider
-                                        )
+                                TodoItemCard(
+                                    item = todo,
+                                    onToggle = { viewModel.toggleComplete(todo.id) },
+                                    onClick = { onNavigateToEdit(todo.id) },
+                                    onDelete = {
+                                        if (viewMode == HomeViewMode.TRASH) viewModel.hardDelete(todo.id)
+                                        else viewModel.deleteTodo(todo.id)
+                                    },
+                                    onPin = { viewModel.togglePin(todo.id) },
+                                    subtaskCount = subtaskCounts[todo.id] ?: 0,
+                                    showArchive = viewMode != HomeViewMode.TRASH,
+                                    showRestore = viewMode == HomeViewMode.TRASH,
+                                    onArchive = {
+                                        if (viewMode == HomeViewMode.ARCHIVED) viewModel.unarchiveTodo(todo.id)
+                                        else viewModel.archiveTodo(todo.id)
+                                    },
+                                    onRestore = { viewModel.restoreTodo(todo.id) },
+                                    iconProvider = iconProvider
+                                )
                                     }
                                 )
                             }
