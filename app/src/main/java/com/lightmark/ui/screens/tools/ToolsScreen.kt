@@ -6,10 +6,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -55,6 +58,9 @@ fun ToolsScreen(
             ToolCard("闹钟", "设置提醒闹钟，到点响铃", Icons.Filled.Alarm) { onNavigate("alarm") }
             ToolCard("收集箱", "快速记录灵感与待办", Icons.Filled.Inbox) { onNavigate("inbox") }
             ToolCard("添加日历", "日 / 月 / 年视图查看待办", Icons.Filled.CalendarMonth) { onNavigate("calendar") }
+            ToolCard("看板视图", "按待办 / 进行中 / 暂停 / 完成分列", Icons.Filled.Dashboard) { onNavigate("board") }
+            ToolCard("四象限", "重要 × 紧急，帮你决定先做什么", Icons.Filled.ViewModule) { onNavigate("matrix") }
+            ToolCard("备份与导出", "JSON 备份、Markdown / CSV 导出与导入", Icons.Filled.Backup) { onNavigate("backup") }
         }
     }
 }

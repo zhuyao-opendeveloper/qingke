@@ -19,6 +19,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.lightmark.ui.screens.ai.AiChatScreen
 import com.lightmark.ui.screens.alarm.AlarmScreen
+import com.lightmark.ui.screens.backup.BackupScreen
+import com.lightmark.ui.screens.board.BoardScreen
+import com.lightmark.ui.screens.board.MatrixScreen
 import com.lightmark.ui.screens.calendar.CalendarScreen
 import com.lightmark.ui.screens.categories.CategoriesScreen
 import com.lightmark.ui.screens.home.HomeScreen
@@ -48,6 +51,9 @@ object Routes {
     const val ALARM = "alarm"
     const val INBOX = "inbox"
     const val CALENDAR = "calendar"
+    const val BOARD = "board"
+    const val MATRIX = "matrix"
+    const val BACKUP = "backup"
 
     fun editTodo(todoId: String) = "edit_todo/$todoId"
 }
@@ -207,6 +213,26 @@ fun LightMarkNavHost(
                 CalendarScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onOpenTodo = { todoId -> navController.navigate(Routes.editTodo(todoId)) }
+                )
+            }
+
+            composable(Routes.BOARD) {
+                BoardScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onOpenTodo = { todoId -> navController.navigate(Routes.editTodo(todoId)) }
+                )
+            }
+
+            composable(Routes.MATRIX) {
+                MatrixScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onOpenTodo = { todoId -> navController.navigate(Routes.editTodo(todoId)) }
+                )
+            }
+
+            composable(Routes.BACKUP) {
+                BackupScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
         }
