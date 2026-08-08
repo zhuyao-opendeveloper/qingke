@@ -20,9 +20,12 @@ import com.lightmark.ui.screens.ai.AiChatScreen
 import com.lightmark.ui.screens.categories.CategoriesScreen
 import com.lightmark.ui.screens.home.HomeScreen
 import com.lightmark.ui.screens.home.HomeViewModel
+import com.lightmark.ui.screens.inbox.InboxScreen
+import com.lightmark.ui.screens.pomodoro.PomodoroScreen
 import com.lightmark.ui.screens.settings.SettingsScreen
 import com.lightmark.ui.screens.stats.StatsScreen
 import com.lightmark.ui.screens.todo.AddEditTodoScreen
+import com.lightmark.ui.screens.tools.ToolsScreen
 import com.lightmark.icons.IconProvider
 import com.lightmark.icons.LightMarkIcon
 
@@ -32,11 +35,16 @@ import com.lightmark.icons.LightMarkIcon
 object Routes {
     const val HOME = "home"
     const val STATS = "stats"
+    const val TOOLS = "tools"
     const val AI = "ai"
     const val CATEGORIES = "categories"
     const val ADD_TODO = "add_todo"
     const val EDIT_TODO = "edit_todo/{todoId}"
     const val SETTINGS = "settings"
+    const val POMODORO = "pomodoro"
+    const val ALARM = "alarm"
+    const val INBOX = "inbox"
+    const val CALENDAR = "calendar"
 
     fun editTodo(todoId: String) = "edit_todo/$todoId"
 }
@@ -59,7 +67,7 @@ fun LightMarkNavHost(
     val currentRoute = currentBackStackEntry?.destination?.route
 
     // 底部导航栏展示的页面
-    val showBottomBar = currentRoute in listOf(Routes.HOME, Routes.STATS, Routes.AI)
+    val showBottomBar = currentRoute in listOf(Routes.HOME, Routes.STATS, Routes.TOOLS, Routes.AI)
 
     Scaffold(
         bottomBar = {
@@ -166,6 +174,25 @@ fun LightMarkNavHost(
                     onNavigateToCategories = { navController.navigate(Routes.CATEGORIES) }
                 )
             }
+
+            composable(Routes.TOOLS) {
+                ToolsScreen(
+                    onNavigate = { route -> navController.navigate(route) },
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.POMODORO) {
+                PomodoroScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.INBOX) {
+                InboxScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
@@ -195,6 +222,12 @@ fun LightMarkBottomBar(
             onClick = { onNavigate(Routes.STATS) },
             icon = { Icon(Icons.Filled.BarChart, contentDescription = "统计") },
             label = "统计"
+        )
+        BottomItem(
+            selected = currentRoute == Routes.TOOLS,
+            onClick = { onNavigate(Routes.TOOLS) },
+            icon = { Icon(Icons.Filled.Apps, contentDescription = "工具") },
+            label = "工具"
         )
         BottomItem(
             selected = currentRoute == Routes.AI,
