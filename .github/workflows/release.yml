@@ -32,12 +32,6 @@ jobs:
       - name: Decode signing keystore
         run: echo "${{ secrets.SIGNING_KEY }}" | base64 -d > "${{ github.workspace }}/release-keystore.p12"
 
-      - name: Diagnose keystore (alias / password)
-        run: |
-          keytool -list -keystore "${{ github.workspace }}/release-keystore.p12" -storetype PKCS12 -storepass "${{ secrets.KEYSTORE_PASSWORD }}" > diag.txt 2>&1 || true
-          echo "---- keytool -list ----"
-          cat diag.txt
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -52,39 +46,19 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: gradle assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log
+        run: gradle assembleRelease --no-daemon --stacktrace
 
-      - name: Report diagnostics to release body
-        if: always()
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: lightmark-release-apk
+          path: app/build/outputs/apk/release/*.apk
+
+      - name: Attach APK to Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REL_ID: ${{ github.event.release.id }}
         run: |
-          {
-            echo "## CI Diagnostics"
-            echo ""
-            echo "### keytool -list"
-            echo '```'
-            cat diag.txt
-            echo '```'
-            echo ""
-            echo "### gradle assembleRelease (tail)"
-            echo '```'
-            tail -50 build.log
-            echo '```'
-          } > report.md
-          {
-            echo "## CI Diagnostics"
-            echo ""
-            echo "### keytool -list"
-            echo '```'
-            cat diag.txt
-            echo '```'
-            echo ""
-            echo "### gradle assembleRelease (key error lines)"
-            echo '```'
-            grep -nE "What went wrong|BUILD FAILED|Execution failed|> Task :app:|FAILURE|e: |error:|Exception|signing|SigningConfig|storeType|keyPassword|keystore|Keystore|Caused by|Could not" build.log | head -70
-            echo '```'
-          } > report.md
-          BODY=$(python3 -c 'import sys,json; print(json.dumps(open("report.md").read()))')
-          curl -s -X PATCH -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" -d "{\"body\":$BODY}" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/$REL_ID"
+          for f in app/build/outputs/apk/release/*.apk; do
+            echo "Uploading $f"
+            gh release upload "${{ github.event.release.tag_name }}" "$f" --clobber
+          done

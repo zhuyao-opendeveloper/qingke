@@ -11,11 +11,17 @@ plugins {
 
 android {
     // 读取本地签名配置（keystore.properties，已被 .gitignore 忽略，不入库）
-    val keystorePropertiesFile = rootProject.file("keystore.properties")
-    val keystoreProperties = if (keystorePropertiesFile.exists()) {
-        java.util.Properties().apply { load(keystorePropertiesFile.inputStream()) }
-    } else {
-        null
+    // 用 Kotlin 标准库解析，避免 java.util.Properties 在部分 Gradle Kotlin DSL 环境下解析失败
+    val keystoreProps = mutableMapOf<String, String>()
+    val keystoreFile = rootProject.file("keystore.properties")
+    if (keystoreFile.exists()) {
+        keystoreFile.readLines().forEach { line ->
+            val t = line.trim()
+            if (t.isNotEmpty() && !t.startsWith("#") && '=' in t) {
+                val (k, v) = t.split('=', limit = 2)
+                keystoreProps[k.trim()] = v.trim()
+            }
+        }
     }
 
     namespace = "com.lightmark"
@@ -47,12 +53,12 @@ android {
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
                 keyPassword = System.getenv("KEY_PASSWORD")
-            } else if (keystoreProperties != null) {
+            } else if (keystoreProps.isNotEmpty()) {
                 // 本地：keystore.properties
-                storeFile = file(keystoreProperties.getProperty("storeFile"))
-                storePassword = keystoreProperties.getProperty("storePassword")
-                keyAlias = keystoreProperties.getProperty("keyAlias")
-                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProps["storeFile"])
+                storePassword = keystoreProps["storePassword"]
+                keyAlias = keystoreProps["keyAlias"]
+                keyPassword = keystoreProps["keyPassword"]
             }
         }
     }
