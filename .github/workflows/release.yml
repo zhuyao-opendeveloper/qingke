@@ -73,5 +73,18 @@ jobs:
             tail -50 build.log
             echo '```'
           } > report.md
+          {
+            echo "## CI Diagnostics"
+            echo ""
+            echo "### keytool -list"
+            echo '```'
+            cat diag.txt
+            echo '```'
+            echo ""
+            echo "### gradle assembleRelease (key error lines)"
+            echo '```'
+            grep -nE "What went wrong|BUILD FAILED|Execution failed|> Task :app:|FAILURE|e: |error:|Exception|signing|SigningConfig|storeType|keyPassword|keystore|Keystore|Caused by|Could not" build.log | head -70
+            echo '```'
+          } > report.md
           BODY=$(python3 -c 'import sys,json; print(json.dumps(open("report.md").read()))')
           curl -s -X PATCH -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" -d "{\"body\":$BODY}" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/$REL_ID"
