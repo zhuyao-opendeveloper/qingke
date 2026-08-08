@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lightmark.ui.components.LightMarkCard
 import com.lightmark.ui.theme.Dimens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

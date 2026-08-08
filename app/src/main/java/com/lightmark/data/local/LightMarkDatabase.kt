@@ -2,9 +2,11 @@ package com.lightmark.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.lightmark.data.local.dao.AlarmDao
 import com.lightmark.data.local.dao.CategoryDao
 import com.lightmark.data.local.dao.InboxDao
 import com.lightmark.data.local.dao.TodoDao
+import com.lightmark.data.local.entity.AlarmEntity
 import com.lightmark.data.local.entity.CategoryEntity
 import com.lightmark.data.local.entity.InboxEntity
 import com.lightmark.data.local.entity.TodoEntity
@@ -14,13 +16,14 @@ import com.lightmark.data.local.entity.TodoEntity
  * 用于离线缓存待办数据
  */
 @Database(
-    entities = [TodoEntity::class, CategoryEntity::class, InboxEntity::class],
-    version = 2,
+    entities = [TodoEntity::class, CategoryEntity::class, InboxEntity::class, AlarmEntity::class],
+    version = 3,
     exportSchema = false
 )
 abstract class LightMarkDatabase : RoomDatabase() {
 
     abstract fun inboxDao(): InboxDao
+    abstract fun alarmDao(): AlarmDao
 
     abstract fun todoDao(): TodoDao
     abstract fun categoryDao(): CategoryDao

@@ -98,7 +98,11 @@ fun InboxScreen(
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                     items(items, key = { it.id }) { item ->
-                        InboxRow(item = item, onToggle = { viewModel.toggle(it) }, onDelete = { viewModel.remove(it) })
+                        InboxRow(
+                            item = item,
+                            onToggle = { viewModel.toggle(item) },
+                            onDelete = { viewModel.remove(item) }
+                        )
                     }
                 }
             }

@@ -6,7 +6,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.lightmark.data.local.LightMarkDatabase
+import com.lightmark.data.local.dao.AlarmDao
 import com.lightmark.data.local.dao.CategoryDao
+import com.lightmark.data.local.dao.InboxDao
 import com.lightmark.data.local.dao.TodoDao
 import com.lightmark.data.remote.GitHubApiService
 import com.lightmark.auth.TokenHolder
@@ -71,6 +73,14 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCategoryDao(database: LightMarkDatabase): CategoryDao = database.categoryDao()
+
+    @Provides
+    @Singleton
+    fun provideInboxDao(database: LightMarkDatabase): InboxDao = database.inboxDao()
+
+    @Provides
+    @Singleton
+    fun provideAlarmDao(database: LightMarkDatabase): AlarmDao = database.alarmDao()
 
     @Provides
     @Singleton

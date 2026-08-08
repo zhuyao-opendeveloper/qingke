@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.*
@@ -17,6 +18,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.lightmark.ui.screens.ai.AiChatScreen
+import com.lightmark.ui.screens.alarm.AlarmScreen
+import com.lightmark.ui.screens.calendar.CalendarScreen
 import com.lightmark.ui.screens.categories.CategoriesScreen
 import com.lightmark.ui.screens.home.HomeScreen
 import com.lightmark.ui.screens.home.HomeViewModel
@@ -191,6 +194,19 @@ fun LightMarkNavHost(
             composable(Routes.INBOX) {
                 InboxScreen(
                     onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.ALARM) {
+                AlarmScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.CALENDAR) {
+                CalendarScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onOpenTodo = { todoId -> navController.navigate(Routes.editTodo(todoId)) }
                 )
             }
         }

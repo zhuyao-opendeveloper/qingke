@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.lightmark.receiver.ReminderReceiver
+import com.lightmark.service.AlarmSoundService
 import dagger.hilt.android.HiltAndroidApp
 
 /**
@@ -21,6 +22,26 @@ class LightMarkApp : Application() {
     override fun onCreate() {
         super.onCreate()
         createReminderChannel()
+        createAlarmChannel()
+    }
+
+    /** 闹钟响铃通知渠道：最高优先级 + 不再由通知自身发声（声音交给前台服务播放） */
+    private fun createAlarmChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                AlarmSoundService.CHANNEL_ID,
+                "闹钟",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "闹钟到点响铃"
+                setShowBadge(false)
+                setSound(null, null)
+                enableVibration(false)
+                lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+            }
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
     }
 
     private fun createReminderChannel() {
