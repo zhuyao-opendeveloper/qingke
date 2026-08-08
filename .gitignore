@@ -12,3 +12,10 @@ local.properties
 # 构建产物与本地辅助脚本（非源码，避免入库）
 /apk_download/
 /push_*.mjs
+
+# 签名密钥与本地配置（含敏感信息，禁止入库）
+keystore.properties
+*.p12
+*.jks
+*.keystore
+

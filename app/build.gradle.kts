@@ -10,6 +10,14 @@ plugins {
 }
 
 android {
+    // 读取本地签名配置（keystore.properties，已被 .gitignore 忽略，不入库）
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val keystoreProperties = if (keystorePropertiesFile.exists()) {
+        java.util.Properties().apply { load(keystorePropertiesFile.inputStream()) }
+    } else {
+        null
+    }
+
     namespace = "com.lightmark"
     compileSdk = 34
 
@@ -29,6 +37,26 @@ android {
         buildConfigField("String", "GITHUB_REPO_NAME", "\"lightmark-data\"")
     }
 
+    signingConfigs {
+        create("release") {
+            storeType = "PKCS12"
+            val envPath = System.getenv("KEYSTORE_PATH")
+            if (envPath != null) {
+                // CI：从 GitHub Secrets 注入的环境变量
+                storeFile = file(envPath)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            } else if (keystoreProperties != null) {
+                // 本地：keystore.properties
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -36,6 +64,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isMinifyEnabled = false
