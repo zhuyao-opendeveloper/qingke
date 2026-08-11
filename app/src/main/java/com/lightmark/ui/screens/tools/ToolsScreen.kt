@@ -38,6 +38,7 @@ fun ToolsScreen(
     onNavigate: (String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val context = LocalContext.current
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -73,7 +74,7 @@ fun ToolsScreen(
             ToolCard("备份与导出", "JSON 备份、Markdown / CSV / HTML / iCal 导出与导入", Icons.Filled.Backup) { onNavigate("backup") }
             LightMarkCard(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { openLightMarkWeb(LocalContext.current) }
+                onClick = { openLightMarkWeb(context) }
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

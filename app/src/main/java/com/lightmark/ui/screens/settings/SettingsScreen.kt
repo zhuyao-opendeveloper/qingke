@@ -60,6 +60,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settings.collectAsState()
+    val context = LocalContext.current
 
     var showIconPackDialog by remember { mutableStateOf(false) }
 
@@ -413,7 +414,7 @@ fun SettingsScreen(
             SectionTitle("在线")
             LightMarkCard(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { openLightMarkWeb(LocalContext.current) }
+                onClick = { openLightMarkWeb(context) }
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
