@@ -19,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.EventNote
+import androidx.compose.material.icons.filled.Html
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.CircularProgressIndicator
@@ -166,6 +168,24 @@ fun BackupScreen(
             ) {
                 pending.action = { write -> viewModel.exportCsv(write) }
                 createDocLauncher.launch(fileName("csv"))
+            }
+
+            ActionCard(
+                title = "导出 HTML / 打印为 PDF",
+                desc = "浏览器打开即可查看，用系统打印可另存为 PDF",
+                icon = Icons.Filled.Html
+            ) {
+                pending.action = { write -> viewModel.exportHtml(write) }
+                createDocLauncher.launch(fileName("html"))
+            }
+
+            ActionCard(
+                title = "导出 iCalendar (.ics)",
+                desc = "导入系统日历 / Google Calendar / Outlook 查看截止日程",
+                icon = Icons.Filled.EventNote
+            ) {
+                pending.action = { write -> viewModel.exportIcs(write) }
+                createDocLauncher.launch(fileName("ics"))
             }
 
             Spacer(modifier = Modifier.height(Dimens.sm))

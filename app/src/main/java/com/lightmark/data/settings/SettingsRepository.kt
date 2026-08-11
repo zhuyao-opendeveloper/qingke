@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
@@ -19,7 +20,7 @@ import javax.inject.Singleton
  * 基于 DataStore(Preferences) 持久化用户偏好：
  * - 隐私协议是否已同意
  * - 主题（模式 / 种子色 / 图标库 / 动态取色）
- * - OpenClaw AI 接入配置
+ * - 本地昵称
  * - 提醒开关 / 默认排序
  *
  * 所有读取以 Flow 形式暴露，写入提供挂起函数。
@@ -40,12 +41,12 @@ class SettingsRepository @Inject constructor(
             themeId = prefs[KEY_THEME_ID] ?: "DEFAULT",
             customPrimary = prefs[KEY_CUSTOM_PRIMARY],
             backgroundImageUri = prefs[KEY_BG_IMAGE_URI] ?: "",
-            openClawEnabled = prefs[KEY_OPENCLAW_ENABLED] ?: false,
-            openClawBaseUrl = prefs[KEY_OPENCLAW_BASE_URL] ?: "https://api.openclaw.ai/v1/",
-            openClawApiKey = prefs[KEY_OPENCLAW_API_KEY] ?: "",
-            openClawModel = prefs[KEY_OPENCLAW_MODEL] ?: "gpt-4o-mini",
+            nickname = prefs[KEY_NICKNAME] ?: "",
             reminderEnabled = prefs[KEY_REMINDER_ENABLED] ?: true,
-            sortOrder = prefs[KEY_SORT_ORDER] ?: "CREATED_DESC"
+            sortOrder = prefs[KEY_SORT_ORDER] ?: "CREATED_DESC",
+            trashRetentionDays = prefs[KEY_TRASH_RETENTION_DAYS] ?: 30,
+            encouragementEnabled = prefs[KEY_ENCOURAGEMENT_ENABLED] ?: true,
+            hapticEnabled = prefs[KEY_HAPTIC_ENABLED] ?: true
         )
     }
 
@@ -87,17 +88,9 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[KEY_BG_IMAGE_URI] = uri }
     }
 
-    // ===== OpenClaw =====
-    suspend fun setOpenClawEnabled(enabled: Boolean) {
-        dataStore.edit { it[KEY_OPENCLAW_ENABLED] = enabled }
-    }
-
-    suspend fun setOpenClawConfig(baseUrl: String, apiKey: String, model: String) {
-        dataStore.edit {
-            it[KEY_OPENCLAW_BASE_URL] = baseUrl
-            it[KEY_OPENCLAW_API_KEY] = apiKey
-            it[KEY_OPENCLAW_MODEL] = model
-        }
+    // ===== 个性化称呼（离线版本地昵称，用于首页问候语） =====
+    suspend fun setNickname(name: String) {
+        dataStore.edit { it[KEY_NICKNAME] = name }
     }
 
     // ===== 提醒 / 排序 =====
@@ -109,6 +102,23 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[KEY_SORT_ORDER] = order }
     }
 
+    // ===== 回收站 / 反馈 =====
+
+    /** 回收站保留天数，0 表示永久保留（#101） */
+    suspend fun setTrashRetentionDays(days: Int) {
+        dataStore.edit { it[KEY_TRASH_RETENTION_DAYS] = days }
+    }
+
+    /** 完成任务时是否弹出鼓励语（#123） */
+    suspend fun setEncouragementEnabled(enabled: Boolean) {
+        dataStore.edit { it[KEY_ENCOURAGEMENT_ENABLED] = enabled }
+    }
+
+    /** 打勾是否震动（#116） */
+    suspend fun setHapticEnabled(enabled: Boolean) {
+        dataStore.edit { it[KEY_HAPTIC_ENABLED] = enabled }
+    }
+
     companion object {
         private val KEY_PRIVACY_ACCEPTED = booleanPreferencesKey("privacy_accepted")
         private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
@@ -118,12 +128,12 @@ class SettingsRepository @Inject constructor(
         private val KEY_THEME_ID = stringPreferencesKey("theme_id")
         private val KEY_CUSTOM_PRIMARY = longPreferencesKey("custom_primary")
         private val KEY_BG_IMAGE_URI = stringPreferencesKey("bg_image_uri")
-        private val KEY_OPENCLAW_ENABLED = booleanPreferencesKey("openclaw_enabled")
-        private val KEY_OPENCLAW_BASE_URL = stringPreferencesKey("openclaw_base_url")
-        private val KEY_OPENCLAW_API_KEY = stringPreferencesKey("openclaw_api_key")
-        private val KEY_OPENCLAW_MODEL = stringPreferencesKey("openclaw_model")
+        private val KEY_NICKNAME = stringPreferencesKey("nickname")
         private val KEY_REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
         private val KEY_SORT_ORDER = stringPreferencesKey("sort_order")
+        private val KEY_TRASH_RETENTION_DAYS = intPreferencesKey("trash_retention_days")
+        private val KEY_ENCOURAGEMENT_ENABLED = booleanPreferencesKey("encouragement_enabled")
+        private val KEY_HAPTIC_ENABLED = booleanPreferencesKey("haptic_enabled")
     }
 }
 
@@ -139,10 +149,10 @@ data class LightMarkSettings(
     val themeId: String = "DEFAULT",
     val customPrimary: Long? = null,
     val backgroundImageUri: String = "",
-    val openClawEnabled: Boolean = false,
-    val openClawBaseUrl: String = "https://api.openclaw.ai/v1/",
-    val openClawApiKey: String = "",
-    val openClawModel: String = "gpt-4o-mini",
+    val nickname: String = "",
     val reminderEnabled: Boolean = true,
-    val sortOrder: String = "CREATED_DESC"
+    val sortOrder: String = "CREATED_DESC",
+    val trashRetentionDays: Int = 30,
+    val encouragementEnabled: Boolean = true,
+    val hapticEnabled: Boolean = true
 )

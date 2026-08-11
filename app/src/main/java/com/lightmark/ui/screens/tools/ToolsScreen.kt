@@ -9,8 +9,12 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material3.*
@@ -60,7 +64,11 @@ fun ToolsScreen(
             ToolCard("添加日历", "日 / 月 / 年视图查看待办", Icons.Filled.CalendarMonth) { onNavigate("calendar") }
             ToolCard("看板视图", "按待办 / 进行中 / 暂停 / 完成分列", Icons.Filled.Dashboard) { onNavigate("board") }
             ToolCard("四象限", "重要 × 紧急，帮你决定先做什么", Icons.Filled.ViewModule) { onNavigate("matrix") }
-            ToolCard("备份与导出", "JSON 备份、Markdown / CSV 导出与导入", Icons.Filled.Backup) { onNavigate("backup") }
+            ToolCard("习惯与目标", "每日打卡、连续天数、目标进度与里程碑", Icons.Filled.LocalFireDepartment) { onNavigate("habit") }
+            ToolCard("任务模板", "常用流程存成模板，一键生成任务与子任务", Icons.Filled.ContentCopy) { onNavigate("template") }
+            ToolCard("表格视图", "类 Excel 表格，一屏对比全部字段", Icons.Filled.TableChart) { onNavigate("table") }
+            ToolCard("回顾复盘", "周报 / 月报，完成率、分布与逾期清理", Icons.Filled.Insights) { onNavigate("review") }
+            ToolCard("备份与导出", "JSON 备份、Markdown / CSV / HTML / iCal 导出与导入", Icons.Filled.Backup) { onNavigate("backup") }
         }
     }
 }

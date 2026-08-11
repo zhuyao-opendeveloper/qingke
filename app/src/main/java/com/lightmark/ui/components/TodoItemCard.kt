@@ -1,7 +1,9 @@
 package com.lightmark.ui.components
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,6 +50,7 @@ import com.lightmark.ui.theme.Dimens
  * @param onDelete 删除事项
  * @param iconProvider 当前图标库
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TodoItemCard(
     item: TodoItem,
@@ -59,22 +64,26 @@ fun TodoItemCard(
     onRestore: () -> Unit = {},
     showArchive: Boolean = false,
     showRestore: Boolean = false,
+    selectionMode: Boolean = false,
+    selected: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimens.lg, vertical = Dimens.sm),
+            .padding(horizontal = Dimens.lg, vertical = Dimens.sm)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         shape = RoundedCornerShape(Dimens.cardCornerRadius),
         elevation = CardDefaults.cardElevation(
             defaultElevation = Dimens.cardElevation
         ),
         colors = CardDefaults.cardColors(
-            containerColor = if (item.isPinned)
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f)
-            else
-                MaterialTheme.colorScheme.surface
+            containerColor = when {
+                selected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+                item.isPinned -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.18f)
+                else -> MaterialTheme.colorScheme.surface
+            }
         )
     ) {
         Row(
@@ -164,7 +173,13 @@ fun TodoItemCard(
 
             Spacer(modifier = Modifier.width(Dimens.sm))
 
-            if (showRestore) {
+            if (selectionMode) {
+                // 多选模式：只显示勾选框（#19）
+                Checkbox(
+                    checked = selected,
+                    onCheckedChange = { onClick() }
+                )
+            } else if (showRestore) {
                 // 回收站视图：恢复
                 IconButton(onClick = onRestore, modifier = Modifier.size(32.dp)) {
                     Icon(
@@ -259,8 +274,13 @@ fun CompleteToggle(
     onToggle: () -> Unit,
     iconProvider: IconProvider
 ) {
+    // 触觉反馈（#116）
+    val haptic = LocalHapticFeedback.current
     IconButton(
-        onClick = onToggle,
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            onToggle()
+        },
         modifier = Modifier.size(28.dp)
     ) {
         AnimatedContent(
@@ -312,9 +332,12 @@ fun TagChip(text: String) {
  */
 @Composable
 fun DueDateBadge(timestamp: Long) {
+    // 日期 + 倒计时（#47）
     val dateText = remember(timestamp) {
         val sdf = java.text.SimpleDateFormat("MM/dd", java.util.Locale.getDefault())
-        sdf.format(java.util.Date(timestamp))
+        val base = sdf.format(java.util.Date(timestamp))
+        val countdown = com.lightmark.util.DateTimeUtils.countdownLabel(timestamp)
+        "$base · $countdown"
     }
     val isOverdue = remember(timestamp) {
         timestamp < System.currentTimeMillis()

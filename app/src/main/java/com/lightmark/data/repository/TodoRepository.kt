@@ -26,10 +26,4 @@ interface TodoRepository {
 
     /** 按 ID 删除 */
     suspend fun deleteById(id: String)
-
-    /** 同步数据到 GitHub */
-    suspend fun syncToGitHub(token: String, login: String): Result<Unit>
-
-    /** 从 GitHub 拉取数据 */
-    suspend fun syncFromGitHub(token: String, login: String): Result<Unit>
 }

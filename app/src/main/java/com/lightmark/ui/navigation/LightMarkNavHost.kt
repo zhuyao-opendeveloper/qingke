@@ -24,12 +24,16 @@ import com.lightmark.ui.screens.board.BoardScreen
 import com.lightmark.ui.screens.board.MatrixScreen
 import com.lightmark.ui.screens.calendar.CalendarScreen
 import com.lightmark.ui.screens.categories.CategoriesScreen
+import com.lightmark.ui.screens.habit.HabitScreen
 import com.lightmark.ui.screens.home.HomeScreen
 import com.lightmark.ui.screens.home.HomeViewModel
 import com.lightmark.ui.screens.inbox.InboxScreen
 import com.lightmark.ui.screens.pomodoro.PomodoroScreen
 import com.lightmark.ui.screens.settings.SettingsScreen
+import com.lightmark.ui.screens.review.ReviewScreen
 import com.lightmark.ui.screens.stats.StatsScreen
+import com.lightmark.ui.screens.table.TableScreen
+import com.lightmark.ui.screens.template.TemplateScreen
 import com.lightmark.ui.screens.todo.AddEditTodoScreen
 import com.lightmark.ui.screens.tools.ToolsScreen
 import com.lightmark.icons.IconProvider
@@ -54,6 +58,10 @@ object Routes {
     const val BOARD = "board"
     const val MATRIX = "matrix"
     const val BACKUP = "backup"
+    const val HABIT = "habit"
+    const val TEMPLATE = "template"
+    const val TABLE = "table"
+    const val REVIEW = "review"
 
     fun editTodo(todoId: String) = "edit_todo/$todoId"
 }
@@ -233,6 +241,32 @@ fun LightMarkNavHost(
             composable(Routes.BACKUP) {
                 BackupScreen(
                     onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.HABIT) {
+                HabitScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.TEMPLATE) {
+                TemplateScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.TABLE) {
+                TableScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onOpenTodo = { navController.navigate(Routes.editTodo(it)) }
+                )
+            }
+
+            composable(Routes.REVIEW) {
+                ReviewScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onOpenTodo = { navController.navigate(Routes.editTodo(it)) }
                 )
             }
         }

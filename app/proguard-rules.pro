@@ -22,18 +22,8 @@
 -keep class javax.inject.** { *; }
 -keep class * extends dagger.hilt.android.lifecycle.HiltViewModel
 
-# Retrofit / OkHttp
--keepattributes Signature, Exceptions
--keep class retrofit2.** { *; }
--keep class okhttp3.** { *; }
--keep class com.google.gson.** { *; }
--keepclassmembers,allowobfuscation class * {
-    @com.google.gson.annotations.SerializedName <fields>;
-}
-
 # Compose
 -keep class androidx.compose.** { *; }
 
-# App models
+# App models（本地存储实体，离线应用保留混淆防护）
 -keep class com.lightmark.domain.model.** { *; }
--keep class com.lightmark.data.remote.dto.** { *; }

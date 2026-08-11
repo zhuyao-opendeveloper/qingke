@@ -2,9 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 网络权限：用于 GitHub API 通信 -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!--
+        轻刻为完全离线应用：不声明 INTERNET / ACCESS_NETWORK_STATE 权限，
+        应用在技术上无法发起任何网络请求，所有数据仅存于本机。
+        以下权限均与核心功能直接相关。
+    -->
     <!-- 通知：待办到期提醒（Android 13+ 运行时申请） -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 精确闹钟：用于到点提醒 -->

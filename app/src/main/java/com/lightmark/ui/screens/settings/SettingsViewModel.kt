@@ -2,16 +2,12 @@ package com.lightmark.ui.screens.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lightmark.auth.AuthManager
-import com.lightmark.data.repository.TodoRepository
 import com.lightmark.data.settings.LightMarkSettings
 import com.lightmark.data.settings.SettingsRepository
 import com.lightmark.domain.model.IconPack
 import com.lightmark.domain.model.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,24 +15,16 @@ import javax.inject.Inject
 /**
  * 设置页 ViewModel
  *
- * 聚合主题、图标库、动态取色、OpenClaw 配置、提醒开关、
- * 账户登录态、数据同步与隐私政策重看。
+ * 聚合主题、图标库、动态取色、提醒开关、体验偏好与隐私政策重看。
+ * 轻刻为完全离线应用，不含账号与云同步相关设置。
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val settingsRepository: SettingsRepository,
-    private val authManager: AuthManager,
-    private val repository: TodoRepository
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     val settings: StateFlow<LightMarkSettings> = settingsRepository.settings
         .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000), LightMarkSettings())
-
-    val isLoggedIn: Boolean get() = authManager.isLoggedIn()
-    val currentUser = authManager.currentUser
-
-    private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
-    val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { settingsRepository.setThemeMode(mode.name) }
@@ -62,48 +50,31 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.setIconPack(pack.name) }
     }
 
-    fun setOpenClawEnabled(enabled: Boolean) {
-        viewModelScope.launch { settingsRepository.setOpenClawEnabled(enabled) }
-    }
-
-    fun setOpenClawConfig(baseUrl: String, apiKey: String, model: String) {
-        viewModelScope.launch { settingsRepository.setOpenClawConfig(baseUrl, apiKey, model) }
+    /** 本地昵称，用于首页问候语 */
+    fun setNickname(name: String) {
+        viewModelScope.launch { settingsRepository.setNickname(name) }
     }
 
     fun setReminderEnabled(enabled: Boolean) {
         viewModelScope.launch { settingsRepository.setReminderEnabled(enabled) }
     }
 
-    fun logout() {
-        authManager.logout()
+    /** 回收站保留天数（#101），0 表示永久保留 */
+    fun setTrashRetentionDays(days: Int) {
+        viewModelScope.launch { settingsRepository.setTrashRetentionDays(days) }
+    }
+
+    /** 完成任务鼓励语（#123） */
+    fun setEncouragementEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setEncouragementEnabled(enabled) }
+    }
+
+    /** 触感反馈（#116） */
+    fun setHapticEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setHapticEnabled(enabled) }
     }
 
     fun reReviewPrivacy() {
         viewModelScope.launch { settingsRepository.setPrivacyAccepted(false) }
     }
-
-    fun syncNow() {
-        if (_syncState.value == SyncState.Loading) return
-        viewModelScope.launch {
-            _syncState.value = SyncState.Loading
-            val token = authManager.getToken()
-            val login = authManager.currentUser.value?.login
-            val result = if (!token.isNullOrBlank() && !login.isNullOrBlank()) {
-                repository.syncToGitHub(token, login)
-            } else {
-                Result.failure(Exception("未登录"))
-            }
-            _syncState.value = result.fold(
-                onSuccess = { SyncState.Success },
-                onFailure = { SyncState.Error(it.message ?: "同步失败") }
-            )
-        }
-    }
-}
-
-sealed interface SyncState {
-    data object Idle : SyncState
-    data object Loading : SyncState
-    data object Success : SyncState
-    data class Error(val message: String) : SyncState
 }

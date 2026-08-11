@@ -43,7 +43,7 @@ import com.lightmark.ui.theme.PRESET_ORDER
  *
  * 用户可在此配置：
  * - 外观（主题模式 / 动态取色 / 图标库）
- * - 集成（OpenClaw AI 接口）
+ * - 个性化称呼（本地昵称）
  * - 提醒开关
  * - 分类管理入口
  * - 数据同步 / 账户退出
@@ -58,11 +58,8 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settings.collectAsState()
-    val user by viewModel.currentUser.collectAsState()
-    val syncState by viewModel.syncState.collectAsState()
 
     var showIconPackDialog by remember { mutableStateOf(false) }
-    var showKey by remember { mutableStateOf(false) }
 
     val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { viewModel.setBackgroundImageUri(it.toString()) }
@@ -254,83 +251,26 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(Dimens.lg))
 
-            // ====== 集成：OpenClaw ======
-            SectionTitle("集成 · OpenClaw AI")
+            // ====== 个性化称呼 ======
+            SectionTitle("称呼")
 
             LightMarkCard(modifier = Modifier.fillMaxWidth()) {
                 Column {
-                    Row(
+                    OutlinedTextField(
+                        value = settings.nickname,
+                        onValueChange = { viewModel.setNickname(it.take(12)) },
+                        label = { Text("昵称") },
+                        placeholder = { Text("留空则只显示问候语") },
+                        singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("启用 AI 能力", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                            Text(
-                                text = "通过 OpenClaw 接口调用大模型（智能填写/润色/对话）",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = settings.openClawEnabled,
-                            onCheckedChange = { viewModel.setOpenClawEnabled(it) }
-                        )
-                    }
-
-                    AnimatedVisibility(visible = settings.openClawEnabled) {
-                        Column {
-                            Spacer(modifier = Modifier.height(Dimens.md))
-                            OutlinedTextField(
-                                value = settings.openClawBaseUrl,
-                                onValueChange = {
-                                    viewModel.setOpenClawConfig(it, settings.openClawApiKey, settings.openClawModel)
-                                },
-                                label = { Text("Base URL") },
-                                placeholder = { Text("https://your-openclaw/v1/") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(Dimens.cardCornerRadius)
-                            )
-                            Spacer(modifier = Modifier.height(Dimens.sm))
-                            OutlinedTextField(
-                                value = settings.openClawApiKey,
-                                onValueChange = {
-                                    viewModel.setOpenClawConfig(settings.openClawBaseUrl, it, settings.openClawModel)
-                                },
-                                label = { Text("API Key") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(Dimens.cardCornerRadius),
-                                visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
-                                trailingIcon = {
-                                    IconButton(onClick = { showKey = !showKey }) {
-                                        Icon(
-                                            imageVector = if (showKey) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                                            contentDescription = "显示/隐藏"
-                                        )
-                                    }
-                                }
-                            )
-                            Spacer(modifier = Modifier.height(Dimens.sm))
-                            OutlinedTextField(
-                                value = settings.openClawModel,
-                                onValueChange = {
-                                    viewModel.setOpenClawConfig(settings.openClawBaseUrl, settings.openClawApiKey, it)
-                                },
-                                label = { Text("模型名") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(Dimens.cardCornerRadius)
-                            )
-                            Spacer(modifier = Modifier.height(Dimens.sm))
-                            Text(
-                                text = "未配置时使用本地规则兜底，数据不出本机。",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                        shape = RoundedCornerShape(Dimens.cardCornerRadius)
+                    )
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    Text(
+                        text = "用于首页问候语，仅保存在本机，最多 12 个字。",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -353,6 +293,68 @@ fun SettingsScreen(
                         checked = settings.reminderEnabled,
                         onCheckedChange = { viewModel.setReminderEnabled(it) }
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // ====== 体验（#116 / #123 / #101） ======
+            SectionTitle("体验")
+            LightMarkCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("完成鼓励语", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("完成任务时给一句小鼓励", fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(
+                            checked = settings.encouragementEnabled,
+                            onCheckedChange = { viewModel.setEncouragementEnabled(it) }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimens.md))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("触感反馈", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("勾选完成、长按多选时轻微震动", fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(
+                            checked = settings.hapticEnabled,
+                            onCheckedChange = { viewModel.setHapticEnabled(it) }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimens.md))
+
+                    Text("回收站保留时长", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("超过时长的已删除任务会自动彻底清除", fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+                    ) {
+                        listOf(7 to "7 天", 14 to "14 天", 30 to "30 天", 90 to "90 天", 0 to "永久")
+                            .forEach { (days, label) ->
+                                FilterChip(
+                                    selected = settings.trashRetentionDays == days,
+                                    onClick = { viewModel.setTrashRetentionDays(days) },
+                                    label = { Text(label, fontSize = 13.sp) }
+                                )
+                            }
+                    }
                 }
             }
 
@@ -382,64 +384,24 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(Dimens.md))
 
-            // 同步与账户
+            // 离线运行说明
             LightMarkCard(modifier = Modifier.fillMaxWidth()) {
                 Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("GitHub 数据同步", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                            Text(
-                                text = user?.let { "已登录：${it.login}" } ?: "未登录",
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                    Text("完全离线运行", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(Dimens.xs))
+                    Text(
+                        text = "轻刻不联网、不注册、不上传。所有待办只保存在本机数据库中，" +
+                            "卸载应用即彻底清除。",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Spacer(modifier = Modifier.height(Dimens.sm))
-                    Button(
-                        onClick = { viewModel.syncNow() },
-                        enabled = user != null && syncState != SyncState.Loading,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        if (syncState == SyncState.Loading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Text("立即同步到 GitHub")
-                        }
-                    }
-                    AnimatedVisibility(visible = syncState is SyncState.Success) {
-                        Text("同步成功 ✅", fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(top = Dimens.sm))
-                    }
-                    AnimatedVisibility(visible = syncState is SyncState.Error) {
-                        Text(
-                            "同步失败：${(syncState as? SyncState.Error)?.message}",
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(top = Dimens.sm)
-                        )
-                    }
-                    if (user != null) {
-                        Spacer(modifier = Modifier.height(Dimens.sm))
-                        TextButton(
-                            onClick = { viewModel.logout() },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            Text("退出登录")
-                        }
-                    }
+                    Text(
+                        text = "换设备请到「工具 → 备份与导出」导出 JSON 备份文件，" +
+                            "在新设备导入即可；该文件也可导入轻刻网页版。",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 

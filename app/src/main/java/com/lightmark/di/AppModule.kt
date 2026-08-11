@@ -3,16 +3,12 @@ package com.lightmark.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.lightmark.data.local.LightMarkDatabase
 import com.lightmark.data.local.dao.AlarmDao
 import com.lightmark.data.local.dao.CategoryDao
 import com.lightmark.data.local.dao.InboxDao
 import com.lightmark.data.local.dao.TodoDao
-import com.lightmark.data.remote.GitHubApiService
-import com.lightmark.auth.TokenHolder
-import com.lightmark.data.remote.GitHubAuthInterceptor
 import com.lightmark.data.repository.TodoRepository
 import com.lightmark.data.repository.TodoRepositoryImpl
 import com.lightmark.data.settings.SettingsRepository
@@ -21,22 +17,18 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.serialization.json.Json
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 /**
  * 应用级依赖注入模块
  *
- * 提供：
- * - Room 数据库
- * - Retrofit + OkHttp
- * - GitHub API 服务
- * - 仓库实现
+ * 轻刻为完全离线应用，本模块只提供本地能力：
+ * - Room 数据库与各 DAO
+ * - DataStore 设置存储
+ * - 本地仓库实现
+ *
+ * 不含任何网络组件（无 Retrofit / OkHttp / 远程 API）。
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -76,6 +68,16 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideHabitDao(database: LightMarkDatabase): com.lightmark.data.local.dao.HabitDao =
+        database.habitDao()
+
+    @Provides
+    @Singleton
+    fun provideTemplateDao(database: LightMarkDatabase): com.lightmark.data.local.dao.TemplateDao =
+        database.templateDao()
+
+    @Provides
+    @Singleton
     fun provideInboxDao(database: LightMarkDatabase): InboxDao = database.inboxDao()
 
     @Provides
@@ -90,56 +92,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTokenHolder(): TokenHolder = TokenHolder()
-
-    @Provides
-    @Singleton
-    fun provideAuthInterceptor(tokenHolder: TokenHolder): GitHubAuthInterceptor {
-        return GitHubAuthInterceptor {
-            // 从 TokenHolder 读取当前 token（登录/恢复时由 AuthManager 写入）
-            tokenHolder.token
-        }
-    }
-
-    @Provides
-    @Singleton
-    fun provideOkHttpClient(authInterceptor: GitHubAuthInterceptor): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-        return OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
-            .addInterceptor(logging)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideGson(): com.google.gson.Gson = com.google.gson.GsonBuilder()
-        .setFieldNamingPolicy(com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-        .create()
-
-    @Provides
-    @Singleton
-    fun provideGitHubApiService(okHttpClient: OkHttpClient, gson: com.google.gson.Gson): GitHubApiService {
-        return Retrofit.Builder()
-            .baseUrl("https://api.github.com/")
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-            .create(GitHubApiService::class.java)
-    }
-
-    @Provides
-    @Singleton
     fun provideTodoRepository(
-        todoDao: TodoDao,
-        gitHubApiService: GitHubApiService,
-        json: Json
+        todoDao: TodoDao
     ): TodoRepository {
-        return TodoRepositoryImpl(todoDao, gitHubApiService, json)
+        return TodoRepositoryImpl(todoDao)
     }
 }

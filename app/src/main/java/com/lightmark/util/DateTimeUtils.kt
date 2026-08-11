@@ -49,4 +49,42 @@ object DateTimeUtils {
      * 判断是否已过期
      */
     fun isOverdue(dueDate: Long): Boolean = dueDate < System.currentTimeMillis()
+
+    /**
+     * 截止日期倒计时（功能 #47）
+     * 例如：已逾期 2 天、今天到期、明天到期、剩余 3 天
+     */
+    fun countdownLabel(dueDate: Long, now: Long = System.currentTimeMillis()): String {
+        val startOfToday = startOfDay(now)
+        val startOfDue = startOfDay(dueDate)
+        val days = ((startOfDue - startOfToday) / 86_400_000L).toInt()
+        return when {
+            days < -1 -> "已逾期 ${-days} 天"
+            days == -1 -> "昨天到期"
+            days == 0 -> {
+                val diff = dueDate - now
+                when {
+                    diff < 0 -> "已逾期"
+                    diff < 3_600_000L -> "剩余 ${(diff / 60_000L).coerceAtLeast(1)} 分钟"
+                    else -> "今天到期"
+                }
+            }
+            days == 1 -> "明天到期"
+            days == 2 -> "后天到期"
+            days <= 30 -> "剩余 $days 天"
+            else -> formatDate(dueDate)
+        }
+    }
+
+    /** 当天 0 点时间戳 */
+    fun startOfDay(timestamp: Long): Long {
+        val cal = Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis
+    }
 }

@@ -14,16 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
-import com.lightmark.auth.AuthManager
-import com.lightmark.auth.AuthState
 import com.lightmark.data.settings.SettingsRepository
 import com.lightmark.domain.model.AppSettings
 import com.lightmark.domain.model.IconPack
 import com.lightmark.domain.model.ThemeMode
 import com.lightmark.ui.navigation.LightMarkNavHost
-import com.lightmark.ui.screens.auth.LoginScreen
 import com.lightmark.ui.screens.privacy.PrivacyDialog
-import com.lightmark.ui.screens.splash.SplashScreen
 import com.lightmark.ui.theme.LightMarkTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -33,16 +29,15 @@ import kotlinx.coroutines.launch
 /**
  * 主 Activity——轻刻应用的入口
  *
+ * 轻刻是完全离线的本地应用：无账号体系、无网络请求，所有数据只存在本机。
+ *
  * 启动流程：
  * 1. 首次启动弹出隐私政策协议（未同意前不允许进入）；
- * 2. 依据登录状态在 Splash / 登录页 / 主页之间切换；
+ * 2. 同意后直接进入主界面，无需登录；
  * 3. 主题（浅色/深色/跟随系统 + 动态取色）由 DataStore 设置驱动。
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var authManager: AuthManager
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -67,8 +62,6 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val authState by authManager.authState.collectAsState()
-            val currentUser by authManager.currentUser.collectAsState()
             val settings by settingsRepository.settings.collectAsState(
                 initial = com.lightmark.data.settings.LightMarkSettings()
             )
@@ -87,34 +80,22 @@ class MainActivity : ComponentActivity() {
 
             LightMarkTheme(appSettings = appSettings) {
                 Surface(modifier = Modifier.fillMaxSize(), color = Color.Transparent) {
-                    when {
-                        showPrivacy -> {
-                            PrivacyDialog(
-                                onAccept = {
-                                    lifecycleScope.launch {
-                                        settingsRepository.setPrivacyAccepted(true)
-                                    }
-                                },
-                                onDecline = {
-                                    finishAffinity()
+                    if (showPrivacy) {
+                        PrivacyDialog(
+                            onAccept = {
+                                lifecycleScope.launch {
+                                    settingsRepository.setPrivacyAccepted(true)
                                 }
-                            )
-                        }
-                        authState is AuthState.Authenticated || authState is AuthState.Local -> {
-                            LightMarkNavHost(
-                                initialRoute = "home",
-                                userId = currentUser?.login ?: ""
-                            )
-                        }
-                        authState is AuthState.Loading -> {
-                            SplashScreen()
-                        }
-                        else -> {
-                            LoginScreen(
-                                onLoginSuccess = { /* ViewModel 中处理导航 */ },
-                                onLocalUse = { authManager.enterLocalMode() }
-                            )
-                        }
+                            },
+                            onDecline = {
+                                finishAffinity()
+                            }
+                        )
+                    } else {
+                        LightMarkNavHost(
+                            initialRoute = "home",
+                            userId = settings.nickname
+                        )
                     }
                 }
             }

@@ -4,11 +4,17 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.lightmark.data.local.dao.AlarmDao
 import com.lightmark.data.local.dao.CategoryDao
+import com.lightmark.data.local.dao.HabitDao
 import com.lightmark.data.local.dao.InboxDao
+import com.lightmark.data.local.dao.TemplateDao
 import com.lightmark.data.local.dao.TodoDao
 import com.lightmark.data.local.entity.AlarmEntity
 import com.lightmark.data.local.entity.CategoryEntity
+import com.lightmark.data.local.entity.GoalEntity
+import com.lightmark.data.local.entity.HabitCheckEntity
+import com.lightmark.data.local.entity.HabitEntity
 import com.lightmark.data.local.entity.InboxEntity
+import com.lightmark.data.local.entity.TemplateEntity
 import com.lightmark.data.local.entity.TodoEntity
 
 /**
@@ -16,8 +22,17 @@ import com.lightmark.data.local.entity.TodoEntity
  * 用于离线缓存待办数据
  */
 @Database(
-    entities = [TodoEntity::class, CategoryEntity::class, InboxEntity::class, AlarmEntity::class],
-    version = 4,
+    entities = [
+        TodoEntity::class,
+        CategoryEntity::class,
+        InboxEntity::class,
+        AlarmEntity::class,
+        HabitEntity::class,
+        HabitCheckEntity::class,
+        GoalEntity::class,
+        TemplateEntity::class
+    ],
+    version = 6,
     exportSchema = false
 )
 abstract class LightMarkDatabase : RoomDatabase() {
@@ -27,6 +42,8 @@ abstract class LightMarkDatabase : RoomDatabase() {
 
     abstract fun todoDao(): TodoDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun habitDao(): HabitDao
+    abstract fun templateDao(): TemplateDao
 
     companion object {
         const val DATABASE_NAME = "lightmark_db"

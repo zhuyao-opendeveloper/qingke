@@ -31,16 +31,14 @@ android {
         applicationId = "com.lightmark"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.4.0"
+        versionCode = 8
+        versionName = "2.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        // GitHub API Base URL（可在 BuildConfig 中访问）
-        buildConfigField("String", "GITHUB_API_BASE_URL", "\"https://api.github.com/\"")
-        // 默认的数据仓库名
-        buildConfigField("String", "GITHUB_REPO_NAME", "\"lightmark-data\"")
+        // 轻刻 v2.0.0 起为「完全离线」应用：无任何网络相关 buildConfigField。
+        // 同步/在线能力已移至网页版（lightmark-web），App 仅做本地存储与 JSON 备份。
     }
 
     signingConfigs {
@@ -131,12 +129,6 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // Network
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.gson)
-    implementation(libs.okhttp)
-    implementation(libs.okhttp.logging.interceptor)
-
     // Kotlin
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
@@ -149,16 +141,10 @@ dependencies {
     // DataStore
     implementation(libs.datastore.preferences)
 
-    // EncryptedSharedPreferences
-    implementation(libs.androidx.security.crypto)
-
     // Accompanist
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.accompanist.flowlayout)
     implementation(libs.accompanist.swiperefresh)
-
-    // Coil
-    implementation(libs.coil.compose)
 
     // 测试
     testImplementation(libs.junit)

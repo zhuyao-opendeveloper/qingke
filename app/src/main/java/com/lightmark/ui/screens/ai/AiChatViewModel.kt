@@ -16,7 +16,7 @@ import javax.inject.Inject
 /**
  * AI 对话 ViewModel
  *
- * - 与 AI 自由对话（在线走 OpenClaw，离线走本地兜底）
+ * - 与本地智能助手对话（完全离线，本机规则应答）
  * - 一键把自然语言拆成多条待办并写入数据库
  */
 @HiltViewModel

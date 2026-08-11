@@ -12,7 +12,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,9 +37,12 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.lightmark.icons.IconProvider
 import com.lightmark.icons.LightMarkIcon
+import com.lightmark.domain.model.Priority
 import com.lightmark.ui.components.EmptyState
 import com.lightmark.ui.components.LightMarkSearchBar
+import com.lightmark.ui.components.QuickAddDialog
 import com.lightmark.ui.components.TodoItemCard
+import com.lightmark.ui.components.priorityLabelOf
 import com.lightmark.ui.theme.Dimens
 
 /**
@@ -62,10 +75,27 @@ fun HomeScreen(
     val lastDeleted by viewModel.lastDeleted.collectAsState()
     val viewMode by viewModel.viewMode.collectAsState()
     val subtaskCounts by viewModel.subtaskCounts.collectAsState()
+    val selectionMode by viewModel.selectionMode.collectAsState()
+    val selectedIds by viewModel.selectedIds.collectAsState()
+    val quickFilter by viewModel.quickFilter.collectAsState()
+    val groupMode by viewModel.groupMode.collectAsState()
+    val groupLabels by viewModel.groupLabels.collectAsState()
+    val encouragement by viewModel.encouragement.collectAsState()
+    val hapticEnabled by viewModel.hapticEnabled.collectAsState()
     val iconProvider = viewModel.currentIconProvider
+
+    // 触感反馈（#116）
+    val hapticFeedback = LocalHapticFeedback.current
+    val buzz: () -> Unit = {
+        if (hapticEnabled) {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
 
     val snackbarHostState = remember { SnackbarHostState() }
     var showSortMenu by remember { mutableStateOf(false) }
+    var showBulkPriorityMenu by remember { mutableStateOf(false) }
+    var showQuickAdd by remember { mutableStateOf(false) }
 
     // 删除撤销提示
     LaunchedEffect(lastDeleted) {
@@ -84,8 +114,75 @@ fun HomeScreen(
         }
     }
 
+    // 完成鼓励语（#123）
+    LaunchedEffect(encouragement) {
+        val text = encouragement
+        if (text != null) {
+            snackbarHostState.showSnackbar(
+                message = text,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.consumeEncouragement()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
+            // 多选操作栏（#19）
+            if (selectionMode) {
+                TopAppBar(
+                    title = { Text("已选 ${selectedIds.size} 项", fontWeight = FontWeight.SemiBold, fontSize = 18.sp) },
+                    navigationIcon = {
+                        IconButton(onClick = { viewModel.exitSelection() }) {
+                            Icon(Icons.Filled.Close, contentDescription = "退出多选")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { viewModel.selectAllVisible() }) {
+                            Icon(Icons.Filled.SelectAll, contentDescription = "全选")
+                        }
+                        if (viewMode == HomeViewMode.TRASH) {
+                            IconButton(onClick = { viewModel.bulkRestore() }) {
+                                Icon(Icons.Filled.Refresh, contentDescription = "批量恢复")
+                            }
+                        } else {
+                            IconButton(onClick = { viewModel.bulkComplete() }) {
+                                Icon(Icons.Filled.DoneAll, contentDescription = "批量完成")
+                            }
+                            IconButton(onClick = { viewModel.bulkArchive() }) {
+                                Icon(Icons.Filled.Bookmark, contentDescription = "批量归档")
+                            }
+                            IconButton(onClick = { showBulkPriorityMenu = true }) {
+                                Icon(Icons.Filled.Flag, contentDescription = "批量设置优先级")
+                            }
+                        }
+                        IconButton(onClick = { viewModel.bulkDelete() }) {
+                            Icon(
+                                Icons.Filled.Delete,
+                                contentDescription = "批量删除",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showBulkPriorityMenu,
+                            onDismissRequest = { showBulkPriorityMenu = false }
+                        ) {
+                            Priority.entries.reversed().forEach { p ->
+                                DropdownMenuItem(
+                                    text = { Text("优先级 → ${priorityLabelOf(p)}") },
+                                    onClick = {
+                                        showBulkPriorityMenu = false
+                                        viewModel.bulkSetPriority(p)
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                    )
+                )
+            } else {
             // 顶部标题栏
             TopAppBar(
                 title = {
@@ -115,6 +212,13 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showQuickAdd = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.Bolt,
+                            contentDescription = "闪电添加",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     IconButton(onClick = onNavigateToAi) {
                         Icon(
                             imageVector = Icons.Filled.AutoAwesome,
@@ -161,12 +265,35 @@ fun HomeScreen(
                                 }
                             )
                         }
+                        Divider()
+                        Text(
+                            text = "分组显示",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = Dimens.lg, top = Dimens.sm, bottom = Dimens.xs)
+                        )
+                        GroupMode.entries.forEach { mode ->
+                            DropdownMenuItem(
+                                text = { Text(mode.label) },
+                                onClick = {
+                                    viewModel.setGroupMode(mode)
+                                    showSortMenu = false
+                                },
+                                leadingIcon = {
+                                    RadioButton(
+                                        selected = groupMode == mode,
+                                        onClick = { viewModel.setGroupMode(mode) }
+                                    )
+                                }
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
+            }
 
             // 视图切换：待办 / 已归档 / 回收站（#25）
             Row(
@@ -237,6 +364,23 @@ fun HomeScreen(
                 }
             }
 
+            // 快速筛选（#59 智能清单）
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = Dimens.lg, vertical = Dimens.xs),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+            ) {
+                QuickFilter.entries.forEach { f ->
+                    FilterChip(
+                        selected = quickFilter == f,
+                        onClick = { viewModel.setQuickFilter(f) },
+                        label = { Text(f.label, fontSize = 13.sp) }
+                    )
+                }
+            }
+
             // 列表 / 空状态（下拉刷新）
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),
@@ -277,6 +421,19 @@ fun HomeScreen(
                             items = todos,
                             key = { it.id }
                         ) { todo ->
+                            Column {
+                            groupLabels[todo.id]?.let { label ->
+                                Text(
+                                    text = label,
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(
+                                        start = Dimens.lg,
+                                        top = Dimens.md,
+                                        bottom = Dimens.xs
+                                    )
+                                )
+                            }
                             AnimatedVisibility(
                                 visible = true,
                                 enter = slideInVertically(
@@ -288,6 +445,7 @@ fun HomeScreen(
                                     confirmValueChange = { value ->
                                         when (value) {
                                             SwipeToDismissBoxValue.StartToEnd -> {
+                                                buzz()
                                                 viewModel.toggleComplete(todo.id)
                                                 false
                                             }
@@ -308,8 +466,20 @@ fun HomeScreen(
                                     content = {
                                 TodoItemCard(
                                     item = todo,
-                                    onToggle = { viewModel.toggleComplete(todo.id) },
-                                    onClick = { onNavigateToEdit(todo.id) },
+                                    onToggle = {
+                                        buzz()
+                                        viewModel.toggleComplete(todo.id)
+                                    },
+                                    onClick = {
+                                        if (selectionMode) viewModel.toggleSelection(todo.id)
+                                        else onNavigateToEdit(todo.id)
+                                    },
+                                    onLongClick = {
+                                        buzz()
+                                        viewModel.startSelection(todo.id)
+                                    },
+                                    selectionMode = selectionMode,
+                                    selected = selectedIds.contains(todo.id),
                                     onDelete = {
                                         if (viewMode == HomeViewMode.TRASH) viewModel.hardDelete(todo.id)
                                         else viewModel.deleteTodo(todo.id)
@@ -328,6 +498,7 @@ fun HomeScreen(
                                     }
                                 )
                             }
+                            }
                         }
                     }
                 }
@@ -341,6 +512,14 @@ fun HomeScreen(
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 88.dp)
         )
+
+        // 闪电添加（自然语言 / 语音 / 剪贴板）
+        if (showQuickAdd) {
+            QuickAddDialog(
+                onDismiss = { showQuickAdd = false },
+                onConfirm = { raw -> viewModel.quickAdd(raw) }
+            )
+        }
     }
 }
 

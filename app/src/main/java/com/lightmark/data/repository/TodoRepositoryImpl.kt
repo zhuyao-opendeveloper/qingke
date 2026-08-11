@@ -2,22 +2,21 @@ package com.lightmark.data.repository
 
 import com.lightmark.data.local.dao.TodoDao
 import com.lightmark.data.local.entity.TodoEntity
-import com.lightmark.data.remote.GitHubApiService
-import com.lightmark.domain.model.Category
-import com.lightmark.domain.model.SyncData
 import com.lightmark.domain.model.TodoItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.Json
-import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * 待办仓库实现（纯本地）
+ *
+ * 轻刻自 v2.0.0 起为完全离线应用：所有数据只存在设备本机的 Room 数据库中，
+ * 不含任何网络请求。跨设备迁移请使用「工具 → 备份与导出」的 JSON 备份文件。
+ */
 @Singleton
 class TodoRepositoryImpl @Inject constructor(
-    private val todoDao: TodoDao,
-    private val gitHubApiService: GitHubApiService,
-    private val json: Json
+    private val todoDao: TodoDao
 ) : TodoRepository {
 
     override fun getAllTodos(): Flow<List<TodoItem>> {
@@ -44,46 +43,5 @@ class TodoRepositoryImpl @Inject constructor(
 
     override suspend fun deleteById(id: String) {
         todoDao.deleteTodoById(id)
-    }
-
-    override suspend fun syncToGitHub(token: String, login: String): Result<Unit> = runCatching {
-        val todos = todoDao.getAllTodosList().map { it.toDomain() }
-        val categories = emptyList<Category>()
-
-        val syncData = SyncData(
-            todos = todos,
-            categories = categories,
-            lastSync = System.currentTimeMillis()
-        )
-
-        val content = json.encodeToString(SyncData.serializer(), syncData)
-        val base64Content = Base64.getEncoder().encodeToString(content.toByteArray(Charsets.UTF_8))
-
-        gitHubApiService.createOrUpdateFile(
-            owner = login,
-            repo = "lightmark-data",
-            path = SyncData.FILE_PATH,
-            body = com.lightmark.data.remote.GitHubContentRequestDto(
-                message = "Sync LightMark data - ${System.currentTimeMillis()}",
-                content = base64Content
-            )
-        )
-    }
-
-    override suspend fun syncFromGitHub(token: String, login: String): Result<Unit> = runCatching {
-        val response = gitHubApiService.getFileContent(
-            owner = login,
-            repo = "lightmark-data",
-            path = SyncData.FILE_PATH
-        )
-
-        val contentBytes = Base64.getDecoder().decode(response.content)
-        val content = String(contentBytes, Charsets.UTF_8)
-
-        val syncData = json.decodeFromString(SyncData.serializer(), content)
-
-        syncData.todos.forEach { todo ->
-            todoDao.insertTodo(TodoEntity.fromDomain(todo))
-        }
     }
 }
