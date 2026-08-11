@@ -93,8 +93,20 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTodoRepository(
-        todoDao: TodoDao
+        todoDao: TodoDao,
+        categoryDao: CategoryDao,
+        habitDao: com.lightmark.data.local.dao.HabitDao,
+        templateDao: com.lightmark.data.local.dao.TemplateDao,
+        alarmDao: AlarmDao,
+        inboxDao: InboxDao
     ): TodoRepository {
-        return TodoRepositoryImpl(todoDao)
+        return TodoRepositoryImpl(
+            todoDao = todoDao,
+            categoryDao = categoryDao,
+            habitDao = habitDao,
+            templateDao = templateDao,
+            alarmDao = alarmDao,
+            inboxDao = inboxDao
+        )
     }
 }

@@ -25,7 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LocalDensity
+import androidx.compose.ui.platform.LocalDensity
 import androidx.core.view.WindowCompat
 import com.lightmark.domain.model.AppSettings
 import com.lightmark.domain.model.ThemeMode
