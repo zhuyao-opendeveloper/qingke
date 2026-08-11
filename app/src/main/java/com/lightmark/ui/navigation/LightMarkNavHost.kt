@@ -36,6 +36,7 @@ import com.lightmark.ui.screens.table.TableScreen
 import com.lightmark.ui.screens.template.TemplateScreen
 import com.lightmark.ui.screens.todo.AddEditTodoScreen
 import com.lightmark.ui.screens.tools.ToolsScreen
+import com.lightmark.ui.screens.tags.TagManageScreen
 import com.lightmark.ui.screens.focus.FocusScreen
 import com.lightmark.icons.IconProvider
 import com.lightmark.icons.LightMarkIcon
@@ -64,6 +65,7 @@ object Routes {
     const val TABLE = "table"
     const val REVIEW = "review"
     const val FOCUS = "focus/{todoId}"
+    const val TAGS = "tags"
 
     fun editTodo(todoId: String) = "edit_todo/$todoId"
     fun focus(todoId: String) = "focus/$todoId"
@@ -266,6 +268,12 @@ fun LightMarkNavHost(
                 TableScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onOpenTodo = { navController.navigate(Routes.editTodo(it)) }
+                )
+            }
+
+            composable(Routes.TAGS) {
+                TagManageScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 

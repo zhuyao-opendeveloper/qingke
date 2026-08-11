@@ -65,4 +65,35 @@ class TodoRepositoryImpl @Inject constructor(
         alarmDao.clearAll()
         inboxDao.clearAll()
     }
+
+    // region 全局标签管理（#30）
+
+    override suspend fun getAllTags(): List<String> {
+        return todoDao.getAllTodosList()
+            .flatMap { it.tags.split(",").map { t -> t.trim() } }
+            .filter { it.isNotBlank() }
+            .distinct()
+            .sorted()
+    }
+
+    override suspend fun renameTag(oldTag: String, newTag: String) {
+        if (newTag.isBlank()) return
+        todoDao.getAllTodosList().forEach { entity ->
+            val tags = entity.tags.split(",").map { it.trim() }.filter { it.isNotBlank() }.toMutableList()
+            val idx = tags.indexOf(oldTag)
+            if (idx >= 0) {
+                tags[idx] = newTag
+                todoDao.updateTodo(entity.copy(tags = tags.joinToString(",")))
+            }
+        }
+    }
+
+    override suspend fun deleteTag(tag: String) {
+        todoDao.getAllTodosList().forEach { entity ->
+            val tags = entity.tags.split(",").map { it.trim() }.filter { it.isNotBlank() && it != tag }
+            todoDao.updateTodo(entity.copy(tags = tags.joinToString(",")))
+        }
+    }
+
+    // endregion
 }

@@ -29,4 +29,13 @@ interface TodoRepository {
 
     /** 清空本机全部数据（#102）：待办 / 分类 / 习惯 / 打卡 / 目标 / 模板 / 闹钟 / 收件箱 */
     suspend fun clearAllData()
+
+    /** 全局标签管理（#30）：列出所有去重标签 */
+    suspend fun getAllTags(): List<String>
+
+    /** 全局标签管理（#30）：重命名标签（跨所有待办改写） */
+    suspend fun renameTag(oldTag: String, newTag: String)
+
+    /** 全局标签管理（#30）：删除标签（从所有待办移除） */
+    suspend fun deleteTag(tag: String)
 }
