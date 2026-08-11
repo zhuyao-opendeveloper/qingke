@@ -37,9 +37,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        // 轻刻 v2.0.0 仍保留可选的 GitHub 同步 / OpenClaw 客户端 / 加密存储能力
-        // （auth/AuthManager.kt、data/remote/* 等源码已包含对应网络与加密逻辑）。
-        // 纯离线场景无需这些配置；在线同步相关能力由网页版 lightmark-web 协同提供。
+        // 轻刻为纯单机应用：不集成任何网络 / 加密 / 同步能力，
+        // 在线同步与 AI 能力统一由网页版 lightmark-web 提供。
     }
 
     signingConfigs {
@@ -147,13 +146,9 @@ dependencies {
     implementation(libs.accompanist.flowlayout)
     implementation(libs.accompanist.swiperefresh)
 
-    // 网络与同步（GitHub 同步 / OpenClaw 客户端 / 加密存储）
-    // 解决此前 :app:compileDebugKotlin 53 处 Unresolved reference
-    implementation(libs.androidx.security.crypto)        // EncryptedSharedPreferences / MasterKey
-    implementation(libs.retrofit)                        // Retrofit / GET / POST / Path / Query / Body ...
-    implementation(libs.retrofit.converter.gson)         // GsonConverterFactory
-    implementation(libs.okhttp)                          // OkHttpClient / Interceptor
-    implementation(libs.gson)                            // Gson / GsonBuilder / SerializedName
+    // 轻刻为纯单机应用，已移除全部网络 / 加密 / 同步依赖（GitHub 同步、OpenClaw 客户端、
+    // EncryptedSharedPreferences 等）。在线同步与 AI 能力由网页版 lightmark-web 提供。
+    // 应用本身不声明 INTERNET 权限、不联网。
 
     // 测试
     testImplementation(libs.junit)
