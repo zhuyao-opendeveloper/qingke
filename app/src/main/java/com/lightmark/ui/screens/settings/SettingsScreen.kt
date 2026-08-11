@@ -421,10 +421,10 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Filled.OpenInBrowser,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                        Text(
+                            "🌐",
+                            fontSize = 22.sp,
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(Dimens.sm))
                         Column {
