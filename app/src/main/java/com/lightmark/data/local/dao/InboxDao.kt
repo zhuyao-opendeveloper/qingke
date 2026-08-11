@@ -22,4 +22,8 @@ interface InboxDao {
 
     @Delete
     suspend fun delete(item: InboxEntity)
+
+    // 一键清空（#102）
+    @Query("DELETE FROM inbox")
+    suspend fun clearAll()
 }

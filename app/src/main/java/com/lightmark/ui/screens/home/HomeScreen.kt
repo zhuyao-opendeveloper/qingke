@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -82,6 +84,7 @@ fun HomeScreen(
     val groupLabels by viewModel.groupLabels.collectAsState()
     val encouragement by viewModel.encouragement.collectAsState()
     val hapticEnabled by viewModel.hapticEnabled.collectAsState()
+    val listDensity by viewModel.listDensity.collectAsState()
     val iconProvider = viewModel.currentIconProvider
 
     // 触感反馈（#116）
@@ -394,6 +397,14 @@ fun HomeScreen(
                             .padding(top = Dimens.xxxl)
                     )
                 } else {
+                    val baseDensity = LocalDensity.current
+                    val densityFactor = when (listDensity) {
+                        "COMPACT" -> 0.85f
+                        else -> 1.0f
+                    }
+                    CompositionLocalProvider(
+                        LocalDensity provides Density(baseDensity.density * densityFactor, baseDensity.fontScale)
+                    ) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
@@ -500,6 +511,7 @@ fun HomeScreen(
                             }
                             }
                         }
+                    }
                     }
                 }
             }

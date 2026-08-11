@@ -26,4 +26,7 @@ interface TodoRepository {
 
     /** 按 ID 删除 */
     suspend fun deleteById(id: String)
+
+    /** 清空本机全部数据（#102）：待办 / 分类 / 习惯 / 打卡 / 目标 / 模板 / 闹钟 / 收件箱 */
+    suspend fun clearAllData()
 }

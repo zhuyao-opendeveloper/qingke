@@ -2,6 +2,7 @@ package com.lightmark.ui.screens.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lightmark.data.repository.TodoRepository
 import com.lightmark.data.settings.LightMarkSettings
 import com.lightmark.data.settings.SettingsRepository
 import com.lightmark.domain.model.IconPack
@@ -20,7 +21,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val repository: TodoRepository
 ) : ViewModel() {
 
     val settings: StateFlow<LightMarkSettings> = settingsRepository.settings
@@ -72,6 +74,26 @@ class SettingsViewModel @Inject constructor(
     /** 触感反馈（#116） */
     fun setHapticEnabled(enabled: Boolean) {
         viewModelScope.launch { settingsRepository.setHapticEnabled(enabled) }
+    }
+
+    /** 提前提醒分钟数（#14） */
+    fun setReminderLeadMinutes(minutes: Int) {
+        viewModelScope.launch { settingsRepository.setReminderLeadMinutes(minutes) }
+    }
+
+    /** 列表密度（#51） */
+    fun setListDensity(density: String) {
+        viewModelScope.launch { settingsRepository.setListDensity(density) }
+    }
+
+    /** 全局字号缩放（#61） */
+    fun setFontScale(scale: Float) {
+        viewModelScope.launch { settingsRepository.setFontScale(scale) }
+    }
+
+    /** 一键清空本机全部数据（#102） */
+    fun clearAllData() {
+        viewModelScope.launch { repository.clearAllData() }
     }
 
     fun reReviewPrivacy() {

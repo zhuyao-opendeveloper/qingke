@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -23,6 +24,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LocalDensity
 import androidx.core.view.WindowCompat
 import com.lightmark.domain.model.AppSettings
 import com.lightmark.domain.model.ThemeMode
@@ -66,11 +69,15 @@ fun LightMarkTheme(
                 )
             )
         }
-        MaterialTheme(
-            colorScheme = colorScheme,
-            shapes = LightMarkShapes,
-            content = content
-        )
+        val baseDensity = LocalDensity.current
+        val densityWithFontScale = Density(baseDensity.density, appSettings.fontScale)
+        CompositionLocalProvider(LocalDensity provides densityWithFontScale) {
+            MaterialTheme(
+                colorScheme = colorScheme,
+                shapes = LightMarkShapes,
+                content = content
+            )
+        }
     }
 }
 

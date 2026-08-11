@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
 import kotlinx.coroutines.flow.Flow
@@ -46,7 +47,10 @@ class SettingsRepository @Inject constructor(
             sortOrder = prefs[KEY_SORT_ORDER] ?: "CREATED_DESC",
             trashRetentionDays = prefs[KEY_TRASH_RETENTION_DAYS] ?: 30,
             encouragementEnabled = prefs[KEY_ENCOURAGEMENT_ENABLED] ?: true,
-            hapticEnabled = prefs[KEY_HAPTIC_ENABLED] ?: true
+            hapticEnabled = prefs[KEY_HAPTIC_ENABLED] ?: true,
+            reminderLeadMinutes = prefs[KEY_REMINDER_LEAD_MINUTES] ?: 10,
+            listDensity = prefs[KEY_LIST_DENSITY] ?: "COZY",
+            fontScale = prefs[KEY_FONT_SCALE] ?: 1.0f
         )
     }
 
@@ -119,6 +123,22 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[KEY_HAPTIC_ENABLED] = enabled }
     }
 
+    // ===== 提醒提前量 / 列表密度 / 字号（#14 / #51 / #61） =====
+    /** 提前提醒分钟数，0 表示准时提醒（#14） */
+    suspend fun setReminderLeadMinutes(minutes: Int) {
+        dataStore.edit { it[KEY_REMINDER_LEAD_MINUTES] = minutes }
+    }
+
+    /** 列表密度：COMPACT / COZY / DETAILED（#51） */
+    suspend fun setListDensity(density: String) {
+        dataStore.edit { it[KEY_LIST_DENSITY] = density }
+    }
+
+    /** 全局字号缩放系数（#61） */
+    suspend fun setFontScale(scale: Float) {
+        dataStore.edit { it[KEY_FONT_SCALE] = scale }
+    }
+
     companion object {
         private val KEY_PRIVACY_ACCEPTED = booleanPreferencesKey("privacy_accepted")
         private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
@@ -134,6 +154,9 @@ class SettingsRepository @Inject constructor(
         private val KEY_TRASH_RETENTION_DAYS = intPreferencesKey("trash_retention_days")
         private val KEY_ENCOURAGEMENT_ENABLED = booleanPreferencesKey("encouragement_enabled")
         private val KEY_HAPTIC_ENABLED = booleanPreferencesKey("haptic_enabled")
+        private val KEY_REMINDER_LEAD_MINUTES = intPreferencesKey("reminder_lead_minutes")
+        private val KEY_LIST_DENSITY = stringPreferencesKey("list_density")
+        private val KEY_FONT_SCALE = floatPreferencesKey("font_scale")
     }
 }
 
@@ -154,5 +177,8 @@ data class LightMarkSettings(
     val sortOrder: String = "CREATED_DESC",
     val trashRetentionDays: Int = 30,
     val encouragementEnabled: Boolean = true,
-    val hapticEnabled: Boolean = true
+    val hapticEnabled: Boolean = true,
+    val reminderLeadMinutes: Int = 10,
+    val listDensity: String = "COZY",
+    val fontScale: Float = 1.0f
 )

@@ -73,7 +73,8 @@ class MainActivity : ComponentActivity() {
                 useDynamicColor = settings.useDynamicColor,
                 themeId = settings.themeId,
                 customPrimary = settings.customPrimary,
-                backgroundImageUri = settings.backgroundImageUri
+                backgroundImageUri = settings.backgroundImageUri,
+                fontScale = settings.fontScale
             )
 
             val showPrivacy = !settings.privacyAccepted

@@ -95,6 +95,10 @@ class HomeViewModel @Inject constructor(
     private val _hapticEnabled = MutableStateFlow(true)
     val hapticEnabled: StateFlow<Boolean> = _hapticEnabled.asStateFlow()
 
+    /** 列表密度（#51）：COMPACT / COZY / DETAILED */
+    private val _listDensity = MutableStateFlow("COZY")
+    val listDensity: StateFlow<String> = _listDensity.asStateFlow()
+
     init {
         viewModelScope.launch {
             cleanupTrash()
@@ -107,6 +111,11 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.settings.map { it.hapticEnabled }.collect { enabled ->
                 _hapticEnabled.value = enabled
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.settings.map { it.listDensity }.collect { density ->
+                _listDensity.value = density
             }
         }
     }

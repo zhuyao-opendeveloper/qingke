@@ -44,6 +44,15 @@
             android:name=".receiver.ReminderReceiver"
             android:exported="false" />
 
+        <!-- 提醒「推迟」广播（#46） -->
+        <receiver
+            android:name=".receiver.SnoozeReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.lightmark.action.SNOOZE" />
+            </intent-filter>
+        </receiver>
+
         <!-- 闹钟到点广播 -->
         <receiver
             android:name=".receiver.AlarmReceiver"

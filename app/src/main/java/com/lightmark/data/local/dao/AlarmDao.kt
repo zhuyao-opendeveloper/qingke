@@ -26,4 +26,8 @@ interface AlarmDao {
 
     @Delete
     suspend fun delete(alarm: AlarmEntity)
+
+    // 一键清空（#102）
+    @Query("DELETE FROM alarms")
+    suspend fun clearAll()
 }

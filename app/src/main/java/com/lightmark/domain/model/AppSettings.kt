@@ -21,7 +21,9 @@ data class AppSettings(
     /** 用户自定义主题色（覆盖内置主题），为 null 时使用 themeId */
     val customPrimary: Long? = null,
     /** 用户自定义背景图片 Uri，为空表示使用主题色淡渐变背景 */
-    val backgroundImageUri: String = ""
+    val backgroundImageUri: String = "",
+    /** 全局字号缩放系数（#61），同时影响行距（sp 相关尺寸） */
+    val fontScale: Float = 1.0f
 )
 
 /**

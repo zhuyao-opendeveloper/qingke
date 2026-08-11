@@ -33,4 +33,8 @@ interface TemplateDao {
 
     @Query("SELECT COUNT(*) FROM templates")
     suspend fun countTemplates(): Int
+
+    // 一键清空（#102）
+    @Query("DELETE FROM templates")
+    suspend fun clearAll()
 }

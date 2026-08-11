@@ -10,22 +10,27 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import com.lightmark.data.settings.SettingsRepository
 
 /**
  * 提醒调度器
  *
- * 基于 AlarmManager 在待办截止时间向系统闹钟注册一条本地通知。
+ * 基于 AlarmManager 在待办截止时间（减去提前提醒量）向系统闹钟注册一条本地通知。
  * 不依赖网络，到点由 [ReminderReceiver] 弹出通知。
  */
 @Singleton
 class ReminderScheduler @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val settingsRepository: SettingsRepository
 ) {
     private val alarmManager =
         context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
 
-    fun schedule(todoId: String, title: String, dueDate: Long, enabled: Boolean) {
+    suspend fun schedule(todoId: String, title: String, dueDate: Long, enabled: Boolean) {
         if (!enabled || dueDate <= System.currentTimeMillis()) return
+        // #14 提前提醒量：在截止时间之前 N 分钟触发
+        val lead = settingsRepository.currentSettings().reminderLeadMinutes.coerceAtLeast(0)
+        val fireAt = (dueDate - lead * 60_000L).coerceAtLeast(System.currentTimeMillis() + 1_000L)
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra(EXTRA_TODO_ID, todoId)
             putExtra(EXTRA_TITLE, title)
@@ -38,7 +43,7 @@ class ReminderScheduler @Inject constructor(
         )
         alarmManager?.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            dueDate,
+            fireAt,
             pi
         )
     }

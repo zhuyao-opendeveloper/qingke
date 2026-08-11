@@ -63,6 +63,7 @@ fun SettingsScreen(
     val context = LocalContext.current
 
     var showIconPackDialog by remember { mutableStateOf(false) }
+    var showClearDialog by remember { mutableStateOf(false) }
 
     val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { viewModel.setBackgroundImageUri(it.toString()) }
@@ -299,9 +300,33 @@ fun SettingsScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(Dimens.md))
+
+            LightMarkCard(modifier = Modifier.fillMaxWidth()) {
+                Column {
+                    Text("提前提醒量（#14）", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("在截止时间之前多久提醒你", fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+                    ) {
+                        listOf(0 to "准时", 5 to "5 分钟", 10 to "10 分钟", 30 to "30 分钟", 60 to "1 小时")
+                            .forEach { (mins, label) ->
+                                FilterChip(
+                                    selected = settings.reminderLeadMinutes == mins,
+                                    onClick = { viewModel.setReminderLeadMinutes(mins) },
+                                    label = { Text(label, fontSize = 13.sp) }
+                                )
+                            }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(Dimens.lg))
 
-            // ====== 体验（#116 / #123 / #101） ======
+            // ====== 体验（#116 / #123 / #101 / #51 / #61） ======
             SectionTitle("体验")
             LightMarkCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -358,6 +383,46 @@ fun SettingsScreen(
                                 )
                             }
                     }
+
+                    Spacer(modifier = Modifier.height(Dimens.md))
+
+                    Text("列表密度（#51）", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("控制首页任务卡片的紧凑程度", fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+                    ) {
+                        listOf("COMPACT" to "紧凑", "COZY" to "舒适", "DETAILED" to "详细")
+                            .forEach { (id, label) ->
+                                FilterChip(
+                                    selected = settings.listDensity == id,
+                                    onClick = { viewModel.setListDensity(id) },
+                                    label = { Text(label, fontSize = 13.sp) }
+                                )
+                            }
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimens.md))
+
+                    Text("字号大小（#61）", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Text("全局缩放字号与行距，立即生效", fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+                    ) {
+                        listOf(0.85f to "小", 1.0f to "标准", 1.15f to "大", 1.3f to "特大")
+                            .forEach { (scale, label) ->
+                                FilterChip(
+                                    selected = kotlin.math.abs(settings.fontScale - scale) < 0.001f,
+                                    onClick = { viewModel.setFontScale(scale) },
+                                    label = { Text(label, fontSize = 13.sp) }
+                                )
+                            }
+                    }
                 }
             }
 
@@ -383,6 +448,20 @@ fun SettingsScreen(
                     Icon(Icons.Filled.ChevronRight, contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.md))
+
+            // #102 一键清空本机全部数据
+            Button(
+                onClick = { showClearDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                )
+            ) {
+                Text("清空本机全部数据")
             }
 
             Spacer(modifier = Modifier.height(Dimens.md))
@@ -509,6 +588,31 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showIconPackDialog = false }) { Text("取消") }
+            }
+        )
+    }
+
+    if (showClearDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDialog = false },
+            title = { Text("清空本机全部数据？") },
+            text = {
+                Text(
+                    "将删除本机数据库中的全部待办、分类、习惯、目标、模板、闹钟与收件箱，" +
+                        "且无法恢复。建议先到「工具 → 备份与导出」做好备份。",
+                    fontSize = 13.sp
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearAllData()
+                        showClearDialog = false
+                    }
+                ) { Text("确认清空", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDialog = false }) { Text("取消") }
             }
         )
     }

@@ -1,5 +1,10 @@
 package com.lightmark.data.repository
 
+import com.lightmark.data.local.dao.AlarmDao
+import com.lightmark.data.local.dao.CategoryDao
+import com.lightmark.data.local.dao.HabitDao
+import com.lightmark.data.local.dao.InboxDao
+import com.lightmark.data.local.dao.TemplateDao
 import com.lightmark.data.local.dao.TodoDao
 import com.lightmark.data.local.entity.TodoEntity
 import com.lightmark.domain.model.TodoItem
@@ -16,7 +21,12 @@ import javax.inject.Singleton
  */
 @Singleton
 class TodoRepositoryImpl @Inject constructor(
-    private val todoDao: TodoDao
+    private val todoDao: TodoDao,
+    private val categoryDao: CategoryDao,
+    private val habitDao: HabitDao,
+    private val templateDao: TemplateDao,
+    private val alarmDao: AlarmDao,
+    private val inboxDao: InboxDao
 ) : TodoRepository {
 
     override fun getAllTodos(): Flow<List<TodoItem>> {
@@ -43,5 +53,16 @@ class TodoRepositoryImpl @Inject constructor(
 
     override suspend fun deleteById(id: String) {
         todoDao.deleteTodoById(id)
+    }
+
+    override suspend fun clearAllData() {
+        todoDao.clearAll()
+        categoryDao.clearAll()
+        habitDao.clearHabits()
+        habitDao.clearChecks()
+        habitDao.clearGoals()
+        templateDao.clearAll()
+        alarmDao.clearAll()
+        inboxDao.clearAll()
     }
 }

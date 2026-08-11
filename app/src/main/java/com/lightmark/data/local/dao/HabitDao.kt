@@ -65,4 +65,14 @@ interface HabitDao {
 
     @Query("DELETE FROM goals WHERE id = :id")
     suspend fun deleteGoalById(id: String)
+
+    // 一键清空（#102）
+    @Query("DELETE FROM habits")
+    suspend fun clearHabits()
+
+    @Query("DELETE FROM habit_checks")
+    suspend fun clearChecks()
+
+    @Query("DELETE FROM goals")
+    suspend fun clearGoals()
 }
