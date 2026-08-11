@@ -8,6 +8,7 @@ import com.lightmark.data.local.LightMarkDatabase
 import com.lightmark.data.local.dao.AlarmDao
 import com.lightmark.data.local.dao.CategoryDao
 import com.lightmark.data.local.dao.InboxDao
+import com.lightmark.data.local.dao.SmartListDao
 import com.lightmark.data.local.dao.TodoDao
 import com.lightmark.data.repository.TodoRepository
 import com.lightmark.data.repository.TodoRepositoryImpl
@@ -86,6 +87,10 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideSmartListDao(database: LightMarkDatabase): SmartListDao = database.smartListDao()
+
+    @Provides
+    @Singleton
     fun provideDatabase(@ApplicationContext context: Context): LightMarkDatabase {
         return LightMarkDatabase.create(context)
     }
@@ -98,7 +103,8 @@ object AppModule {
         habitDao: com.lightmark.data.local.dao.HabitDao,
         templateDao: com.lightmark.data.local.dao.TemplateDao,
         alarmDao: AlarmDao,
-        inboxDao: InboxDao
+        inboxDao: InboxDao,
+        smartListDao: SmartListDao
     ): TodoRepository {
         return TodoRepositoryImpl(
             todoDao = todoDao,
@@ -106,7 +112,8 @@ object AppModule {
             habitDao = habitDao,
             templateDao = templateDao,
             alarmDao = alarmDao,
-            inboxDao = inboxDao
+            inboxDao = inboxDao,
+            smartListDao = smartListDao
         )
     }
 }

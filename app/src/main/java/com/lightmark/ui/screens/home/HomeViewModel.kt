@@ -12,6 +12,7 @@ import com.lightmark.domain.model.Category
 import com.lightmark.domain.model.IconPack
 import com.lightmark.domain.model.Priority
 import com.lightmark.domain.model.Recurrence
+import com.lightmark.domain.model.SmartList
 import com.lightmark.domain.model.TodoItem
 import com.lightmark.icons.IconProvider
 import com.lightmark.icons.getIconProvider
@@ -150,6 +151,10 @@ class HomeViewModel @Inject constructor(
     private val _quickFilter = MutableStateFlow(QuickFilter.ALL)
     val quickFilter: StateFlow<QuickFilter> = _quickFilter.asStateFlow()
 
+    /** 自定义智能清单（#28）：已保存的清单 */
+    val smartLists: StateFlow<List<SmartList>> = repository.getSmartLists()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     /** 分组显示（#58） */
     private val _groupMode = MutableStateFlow(GroupMode.NONE)
     val groupMode: StateFlow<GroupMode> = _groupMode.asStateFlow()
@@ -210,6 +215,18 @@ class HomeViewModel @Inject constructor(
 
     fun setQuickFilter(filter: QuickFilter) {
         _quickFilter.value = filter
+        exitSelection()
+    }
+
+    /** 套用自定义智能清单（#28）：一次性设置筛选 / 分类 / 关键词 / 排序 */
+    fun applySmartList(list: SmartList) {
+        _quickFilter.value = list.quickFilter
+            ?.let { runCatching { QuickFilter.valueOf(it) }.getOrNull() } ?: QuickFilter.ALL
+        _selectedCategoryId.value = list.categoryId
+        _searchQuery.value = list.query ?: ""
+        _sortOrder.value = list.sortOrder
+            ?.let { runCatching { SortOrder.valueOf(it) }.getOrNull() } ?: SortOrder.CREATED_DESC
+        _isSearching.value = !list.query.isNullOrBlank()
         exitSelection()
     }
 

@@ -8,6 +8,7 @@ import com.lightmark.data.local.dao.HabitDao
 import com.lightmark.data.local.dao.InboxDao
 import com.lightmark.data.local.dao.TemplateDao
 import com.lightmark.data.local.dao.TodoDao
+import com.lightmark.data.local.dao.SmartListDao
 import com.lightmark.data.local.entity.AlarmEntity
 import com.lightmark.data.local.entity.CategoryEntity
 import com.lightmark.data.local.entity.GoalEntity
@@ -16,6 +17,7 @@ import com.lightmark.data.local.entity.HabitEntity
 import com.lightmark.data.local.entity.InboxEntity
 import com.lightmark.data.local.entity.TemplateEntity
 import com.lightmark.data.local.entity.TodoEntity
+import com.lightmark.data.local.entity.SmartListEntity
 
 /**
  * 轻刻本地数据库
@@ -30,9 +32,10 @@ import com.lightmark.data.local.entity.TodoEntity
         HabitEntity::class,
         HabitCheckEntity::class,
         GoalEntity::class,
-        TemplateEntity::class
+        TemplateEntity::class,
+        SmartListEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class LightMarkDatabase : RoomDatabase() {
@@ -44,6 +47,7 @@ abstract class LightMarkDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun habitDao(): HabitDao
     abstract fun templateDao(): TemplateDao
+    abstract fun smartListDao(): SmartListDao
 
     companion object {
         const val DATABASE_NAME = "lightmark_db"

@@ -1,5 +1,6 @@
 package com.lightmark.data.repository
 
+import com.lightmark.domain.model.SmartList
 import com.lightmark.domain.model.TodoItem
 import kotlinx.coroutines.flow.Flow
 
@@ -38,4 +39,13 @@ interface TodoRepository {
 
     /** 全局标签管理（#30）：删除标签（从所有待办移除） */
     suspend fun deleteTag(tag: String)
+
+    /** 自定义智能清单（#28）：订阅全部清单 */
+    fun getSmartLists(): Flow<List<SmartList>>
+
+    /** 自定义智能清单（#28）：保存（新增 / 更新） */
+    suspend fun saveSmartList(list: SmartList)
+
+    /** 自定义智能清单（#28）：删除 */
+    suspend fun deleteSmartList(id: String)
 }

@@ -4,9 +4,11 @@ import com.lightmark.data.local.dao.AlarmDao
 import com.lightmark.data.local.dao.CategoryDao
 import com.lightmark.data.local.dao.HabitDao
 import com.lightmark.data.local.dao.InboxDao
+import com.lightmark.data.local.dao.SmartListDao
 import com.lightmark.data.local.dao.TemplateDao
 import com.lightmark.data.local.dao.TodoDao
 import com.lightmark.data.local.entity.TodoEntity
+import com.lightmark.domain.model.SmartList
 import com.lightmark.domain.model.TodoItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,7 +28,8 @@ class TodoRepositoryImpl @Inject constructor(
     private val habitDao: HabitDao,
     private val templateDao: TemplateDao,
     private val alarmDao: AlarmDao,
-    private val inboxDao: InboxDao
+    private val inboxDao: InboxDao,
+    private val smartListDao: SmartListDao
 ) : TodoRepository {
 
     override fun getAllTodos(): Flow<List<TodoItem>> {
@@ -93,6 +96,22 @@ class TodoRepositoryImpl @Inject constructor(
             val tags = entity.tags.split(",").map { it.trim() }.filter { it.isNotBlank() && it != tag }
             todoDao.updateTodo(entity.copy(tags = tags.joinToString(",")))
         }
+    }
+
+    // endregion
+
+    // region 自定义智能清单（#28）
+
+    override fun getSmartLists(): Flow<List<SmartList>> {
+        return smartListDao.getAll().map { list -> list.map { it.toDomain() } }
+    }
+
+    override suspend fun saveSmartList(list: SmartList) {
+        smartListDao.insert(SmartListEntity.fromDomain(list))
+    }
+
+    override suspend fun deleteSmartList(id: String) {
+        smartListDao.deleteById(id)
     }
 
     // endregion

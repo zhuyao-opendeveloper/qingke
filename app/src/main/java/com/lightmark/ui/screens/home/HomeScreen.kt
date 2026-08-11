@@ -67,7 +67,8 @@ fun HomeScreen(
     onNavigateToEdit: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToAi: () -> Unit,
-    onNavigateToFocus: (String) -> Unit = {}
+    onNavigateToFocus: (String) -> Unit = {},
+    onNavigateToSmartLists: () -> Unit = {}
 ) {
     val todos by viewModel.todos.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
@@ -86,6 +87,7 @@ fun HomeScreen(
     val encouragement by viewModel.encouragement.collectAsState()
     val hapticEnabled by viewModel.hapticEnabled.collectAsState()
     val listDensity by viewModel.listDensity.collectAsState()
+    val smartLists by viewModel.smartLists.collectAsState()
     val iconProvider = viewModel.currentIconProvider
 
     // 触感反馈（#116）
@@ -381,6 +383,29 @@ fun HomeScreen(
                         selected = quickFilter == f,
                         onClick = { viewModel.setQuickFilter(f) },
                         label = { Text(f.label, fontSize = 13.sp) }
+                    )
+                }
+            }
+
+            // 自定义智能清单（#28）：已保存的命名筛选
+            if (smartLists.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = Dimens.lg, vertical = Dimens.xs),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+                ) {
+                    smartLists.forEach { sl ->
+                        FilterChip(
+                            selected = false,
+                            onClick = { viewModel.applySmartList(sl) },
+                            label = { Text("${sl.emoji} ${sl.name}", fontSize = 13.sp) }
+                        )
+                    }
+                    AssistChip(
+                        onClick = onNavigateToSmartLists,
+                        label = { Text("管理", fontSize = 13.sp) }
                     )
                 }
             }
