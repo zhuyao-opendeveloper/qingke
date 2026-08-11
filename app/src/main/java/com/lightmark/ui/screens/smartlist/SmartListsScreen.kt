@@ -164,7 +164,7 @@ fun SmartListsScreen(
                             onClick = {
                                 if (name.isBlank()) return@Button
                                 val list = SmartList(
-                                    id = editingId ?: SmartList().id,
+                                    id = editingId ?: SmartList(name = "").id,
                                     name = name.trim(),
                                     emoji = emoji.ifBlank { "📋" },
                                     quickFilter = quickFilter?.name,
