@@ -71,7 +71,7 @@ fun ToolsScreen(
             ToolCard("表格视图", "类 Excel 表格，一屏对比全部字段", Icons.Filled.TableChart) { onNavigate("table") }
             ToolCard("回顾复盘", "周报 / 月报，完成率、分布与逾期清理", Icons.Filled.Insights) { onNavigate("review") }
             ToolCard("备份与导出", "JSON 备份、Markdown / CSV / HTML / iCal 导出与导入", Icons.Filled.Backup) { onNavigate("backup") }
-            ToolCard("轻刻网页版", "云端同步、AI 对话、跨设备访问，浏览器打开即用", Icons.Filled.Language) {
+            ToolCard("轻刻网页版", "云端同步、AI 对话、跨设备访问，浏览器打开即用", Icons.Filled.OpenInBrowser) {
                 openLightMarkWeb(LocalContext.current)
             }
         }

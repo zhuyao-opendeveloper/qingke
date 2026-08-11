@@ -422,7 +422,7 @@ fun SettingsScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            Icons.Filled.Language,
+                            Icons.Filled.OpenInBrowser,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary
                         )
