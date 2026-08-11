@@ -66,7 +66,8 @@ fun HomeScreen(
     onNavigateToAdd: () -> Unit,
     onNavigateToEdit: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToAi: () -> Unit
+    onNavigateToAi: () -> Unit,
+    onNavigateToFocus: (String) -> Unit = {}
 ) {
     val todos by viewModel.todos.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
@@ -504,6 +505,7 @@ fun HomeScreen(
                                         else viewModel.archiveTodo(todo.id)
                                     },
                                     onRestore = { viewModel.restoreTodo(todo.id) },
+                                    onFocus = { onNavigateToFocus(todo.id) },
                                     iconProvider = iconProvider
                                 )
                                     }

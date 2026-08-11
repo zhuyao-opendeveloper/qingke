@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.CenterFocusStrong
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -58,6 +59,7 @@ fun TodoItemCard(
     onClick: () -> Unit,
     onDelete: () -> Unit,
     iconProvider: IconProvider,
+    onFocus: () -> Unit = {},
     onPin: () -> Unit = {},
     subtaskCount: Int = 0,
     onArchive: () -> Unit = {},
@@ -198,6 +200,18 @@ fun TodoItemCard(
                     )
                 }
             } else {
+                // 专注按钮（#58 / #59）
+                IconButton(
+                    onClick = onFocus,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CenterFocusStrong,
+                        contentDescription = "专注模式",
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                    )
+                }
+
                 // 置顶按钮
                 IconButton(
                     onClick = onPin,

@@ -36,6 +36,7 @@ import com.lightmark.ui.screens.table.TableScreen
 import com.lightmark.ui.screens.template.TemplateScreen
 import com.lightmark.ui.screens.todo.AddEditTodoScreen
 import com.lightmark.ui.screens.tools.ToolsScreen
+import com.lightmark.ui.screens.focus.FocusScreen
 import com.lightmark.icons.IconProvider
 import com.lightmark.icons.LightMarkIcon
 
@@ -62,8 +63,10 @@ object Routes {
     const val TEMPLATE = "template"
     const val TABLE = "table"
     const val REVIEW = "review"
+    const val FOCUS = "focus/{todoId}"
 
     fun editTodo(todoId: String) = "edit_todo/$todoId"
+    fun focus(todoId: String) = "focus/$todoId"
 }
 
 /**
@@ -143,6 +146,9 @@ fun LightMarkNavHost(
                     },
                     onNavigateToAi = {
                         navController.navigate(Routes.AI)
+                    },
+                    onNavigateToFocus = { todoId ->
+                        navController.navigate(Routes.focus(todoId))
                     }
                 )
             }
@@ -267,6 +273,17 @@ fun LightMarkNavHost(
                 ReviewScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onOpenTodo = { navController.navigate(Routes.editTodo(it)) }
+                )
+            }
+
+            composable(
+                route = Routes.FOCUS,
+                arguments = listOf(navArgument("todoId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val todoId = backStackEntry.arguments?.getString("todoId") ?: return@composable
+                FocusScreen(
+                    todoId = todoId,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
         }
