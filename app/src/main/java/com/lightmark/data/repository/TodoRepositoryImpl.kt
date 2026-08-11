@@ -7,6 +7,7 @@ import com.lightmark.data.local.dao.InboxDao
 import com.lightmark.data.local.dao.SmartListDao
 import com.lightmark.data.local.dao.TemplateDao
 import com.lightmark.data.local.dao.TodoDao
+import com.lightmark.data.local.entity.SmartListEntity
 import com.lightmark.data.local.entity.TodoEntity
 import com.lightmark.domain.model.SmartList
 import com.lightmark.domain.model.TodoItem
