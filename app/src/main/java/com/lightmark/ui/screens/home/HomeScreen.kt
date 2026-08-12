@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SelectAll
@@ -88,6 +89,8 @@ fun HomeScreen(
     val hapticEnabled by viewModel.hapticEnabled.collectAsState()
     val listDensity by viewModel.listDensity.collectAsState()
     val smartLists by viewModel.smartLists.collectAsState()
+    val biometricLockEnabled by viewModel.biometricLockEnabled.collectAsState()
+    val showPrivate by viewModel.showPrivate.collectAsState()
     val iconProvider = viewModel.currentIconProvider
 
     // 触感反馈（#116）
@@ -353,7 +356,9 @@ fun HomeScreen(
                         onClick = { viewModel.filterByCategory(null) },
                         label = { Text("全部", fontSize = 13.sp) }
                     )
-                    categories.forEach { cat ->
+                    val visibleCategories = if (biometricLockEnabled && !showPrivate)
+                        categories.filter { !it.isPrivate } else categories
+                    visibleCategories.forEach { cat ->
                         FilterChip(
                             selected = selectedCategoryId == cat.id,
                             onClick = { viewModel.filterByCategory(cat.id) },
@@ -383,6 +388,20 @@ fun HomeScreen(
                         selected = quickFilter == f,
                         onClick = { viewModel.setQuickFilter(f) },
                         label = { Text(f.label, fontSize = 13.sp) }
+                    )
+                }
+                if (biometricLockEnabled) {
+                    FilterChip(
+                        selected = showPrivate,
+                        onClick = { viewModel.setShowPrivate(!showPrivate) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.Lock,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        },
+                        label = { Text(if (showPrivate) "隐藏私密" else "显示私密", fontSize = 13.sp) }
                     )
                 }
             }

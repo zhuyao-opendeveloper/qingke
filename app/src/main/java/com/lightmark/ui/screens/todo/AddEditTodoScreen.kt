@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
@@ -90,6 +91,7 @@ fun AddEditTodoScreen(
     val dueDate by viewModel.dueDate.collectAsState()
     val startDate by viewModel.startDate.collectAsState()
     val isBlocked by viewModel.isBlocked.collectAsState()
+    val isPrivate by viewModel.isPrivate.collectAsState()
     val status by viewModel.status.collectAsState()
     val recurrenceRule by viewModel.recurrenceRule.collectAsState()
     val parentId by viewModel.parentId.collectAsState()
@@ -344,6 +346,22 @@ fun AddEditTodoScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f))
                 Switch(checked = isPinned, onCheckedChange = { viewModel.setPinned(it) })
+            }
+
+            // 私密
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+            ) {
+                Icon(imageVector = Icons.Filled.Lock, contentDescription = null,
+                    tint = if (isPrivate) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp))
+                Text("私密待办（开启后需解锁才能查看）", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f))
+                Switch(checked = isPrivate, onCheckedChange = { viewModel.setPrivate(it) })
             }
 
             // 提醒

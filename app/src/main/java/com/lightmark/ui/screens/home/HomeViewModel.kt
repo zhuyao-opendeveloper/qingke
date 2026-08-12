@@ -70,6 +70,16 @@ class HomeViewModel @Inject constructor(
     private val _lastDeleted = MutableStateFlow<TodoItem?>(null)
     val lastDeleted: StateFlow<TodoItem?> = _lastDeleted.asStateFlow()
 
+    /** 是否显示私密内容（#97）：仅当生物识别锁开启时有意义 */
+    private val _showPrivate = MutableStateFlow(false)
+    val showPrivate: StateFlow<Boolean> = _showPrivate.asStateFlow()
+
+    /** 生物识别锁是否开启（#96/#97 共用） */
+    private val _biometricLockEnabled = MutableStateFlow(false)
+    val biometricLockEnabled: StateFlow<Boolean> = _biometricLockEnabled.asStateFlow()
+
+    fun setShowPrivate(show: Boolean) { _showPrivate.value = show }
+
     /** 当前列表视图：待办 / 已归档 / 回收站 */
     private val _viewMode = MutableStateFlow(HomeViewMode.ACTIVE)
     val viewMode: StateFlow<HomeViewMode> = _viewMode.asStateFlow()
@@ -119,6 +129,11 @@ class HomeViewModel @Inject constructor(
                 _listDensity.value = density
             }
         }
+        viewModelScope.launch {
+            settingsRepository.settings.map { it.biometricLockEnabled }.collect { enabled ->
+                _biometricLockEnabled.value = enabled
+            }
+        }
     }
 
     /** 回收站按保留天数自动清理（#101），0 表示永久保留 */
@@ -138,6 +153,11 @@ class HomeViewModel @Inject constructor(
     val categories: StateFlow<List<Category>> = categoryDao.getAllCategories()
         .map { list -> list.map { entity -> entity.toDomain() } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** 私密分类 id 集合（#97），用于隐藏其下待办 */
+    val privateCategoryIds: StateFlow<Set<String>> = categories.map { list ->
+        list.filter { it.isPrivate }.map { it.id }.toSet()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     /** 每个父任务的直接子任务数量（用于卡片徽标，#3） */
     val subtaskCounts: StateFlow<Map<String, Int>> = todoDao.getAllTodos()
@@ -159,7 +179,8 @@ class HomeViewModel @Inject constructor(
     private val _groupMode = MutableStateFlow(GroupMode.NONE)
     val groupMode: StateFlow<GroupMode> = _groupMode.asStateFlow()
 
-    private val filteredTodos: StateFlow<List<TodoItem>> = combine(
+    /** 不含私密过滤的列表（私密项是否可见由下方 filteredTodos 决定，#97） */
+    private val baseFilteredTodos: StateFlow<List<TodoItem>> = combine(
         baseTodos,
         _searchQuery,
         _selectedCategoryId,
@@ -192,6 +213,23 @@ class HomeViewModel @Inject constructor(
 
         // 置顶优先，组内保持所选排序（稳定排序）
         filtered.sortedWith(compareByDescending<TodoItem> { it.isPinned }.then(comparator))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /**
+     * 私密过滤（#97）：当生物识别锁开启且用户未主动显示私密时，
+     * 隐藏私密待办与私密分类下的待办。
+     */
+    private val filteredTodos: StateFlow<List<TodoItem>> = combine(
+        baseFilteredTodos,
+        _showPrivate,
+        _biometricLockEnabled,
+        privateCategoryIds
+    ) { list, showPrivate, bioLock, privCats ->
+        if (bioLock && !showPrivate) {
+            list.filter { !it.isPrivate && !privCats.contains(it.categoryId) }
+        } else {
+            list
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /** 分组后的顺序 + 每个分组首项对应的标题（用于列表内插入分组头） */

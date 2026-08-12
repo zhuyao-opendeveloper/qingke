@@ -2,6 +2,8 @@ package com.lightmark.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.lightmark.data.local.dao.AlarmDao
 import com.lightmark.data.local.dao.CategoryDao
 import com.lightmark.data.local.dao.HabitDao
@@ -35,7 +37,7 @@ import com.lightmark.data.local.entity.SmartListEntity
         TemplateEntity::class,
         SmartListEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class LightMarkDatabase : RoomDatabase() {
@@ -52,6 +54,14 @@ abstract class LightMarkDatabase : RoomDatabase() {
     companion object {
         const val DATABASE_NAME = "lightmark_db"
 
+        /** v7 → v8：新增私密标记列，保留原有数据（#97） */
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE todos ADD COLUMN is_private INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE categories ADD COLUMN is_private INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         @Volatile
         private var INSTANCE: LightMarkDatabase? = null
 
@@ -62,6 +72,7 @@ abstract class LightMarkDatabase : RoomDatabase() {
                     LightMarkDatabase::class.java,
                     DATABASE_NAME
                 )
+                    .addMigrations(MIGRATION_7_8)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

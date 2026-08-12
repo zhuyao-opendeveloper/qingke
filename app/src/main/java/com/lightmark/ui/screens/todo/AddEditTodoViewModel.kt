@@ -76,6 +76,9 @@ class AddEditTodoViewModel @Inject constructor(
     private val _parentId = MutableStateFlow<String?>(null)
     val parentId: StateFlow<String?> = _parentId.asStateFlow()
 
+    private val _isPrivate = MutableStateFlow(false)
+    val isPrivate: StateFlow<Boolean> = _isPrivate.asStateFlow()
+
     /** 可作为父任务的候选（排除已删除与自身） */
     val parentCandidates: StateFlow<List<TodoItem>> = todoDao.getAllTodos()
         .map { list -> list.filter { !it.isDeleted }.map { it.toDomain() } }
@@ -121,6 +124,7 @@ class AddEditTodoViewModel @Inject constructor(
             _status.value = TodoStatus.fromString(todo.status)
             _recurrenceRule.value = todo.recurrenceRule
             _parentId.value = todo.parentId
+            _isPrivate.value = todo.isPrivate
         }
     }
 
@@ -135,6 +139,7 @@ class AddEditTodoViewModel @Inject constructor(
     fun setStatus(s: TodoStatus) { _status.value = s }
     fun setRecurrenceRule(rule: String?) { _recurrenceRule.value = rule }
     fun setParentId(id: String?) { _parentId.value = id }
+    fun setPrivate(private: Boolean) { _isPrivate.value = private }
     fun setReminderEnabled(enabled: Boolean) { _reminderEnabled.value = enabled }
 
     fun addTag(tag: String) {
@@ -226,6 +231,7 @@ class AddEditTodoViewModel @Inject constructor(
                     isDeleted = existing?.isDeleted ?: false,
                     deletedAt = existing?.deletedAt,
                     parentId = _parentId.value,
+                    isPrivate = _isPrivate.value,
                     recurrenceRule = _recurrenceRule.value,
                     updatedAt = now
                 )
@@ -244,6 +250,7 @@ class AddEditTodoViewModel @Inject constructor(
                     isBlocked = _isBlocked.value,
                     status = _status.value.name,
                     parentId = _parentId.value,
+                    isPrivate = _isPrivate.value,
                     recurrenceRule = _recurrenceRule.value,
                     createdAt = now,
                     updatedAt = now

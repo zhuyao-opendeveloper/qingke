@@ -16,7 +16,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
+import androidx.compose.material3.Switch
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +51,7 @@ fun CategoriesScreen(
     var editing by remember { mutableStateOf<Category?>(null) }
     var nameInput by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(PRESET_COLORS[0]) }
+    var isPrivateInput by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<Category?>(null) }
 
     Scaffold(
@@ -71,6 +74,7 @@ fun CategoriesScreen(
                     editing = null
                     nameInput = ""
                     selectedColor = PRESET_COLORS[0]
+                    isPrivateInput = false
                     showEditor = true
                 },
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -112,6 +116,7 @@ fun CategoriesScreen(
                             editing = cat
                             nameInput = cat.name
                             selectedColor = cat.color
+                            isPrivateInput = cat.isPrivate
                             showEditor = true
                         }
                     ) {
@@ -197,15 +202,37 @@ fun CategoriesScreen(
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(Dimens.md))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Lock,
+                            contentDescription = null,
+                            tint = if (isPrivateInput) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            "私密分类（开启后需解锁才能查看）",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(checked = isPrivateInput, onCheckedChange = { isPrivateInput = it })
+                    }
                 }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         if (editing == null) {
-                            viewModel.addCategory(nameInput, selectedColor)
+                            viewModel.addCategory(nameInput, selectedColor, isPrivateInput)
                         } else {
-                            viewModel.updateCategory(editing!!, nameInput, selectedColor)
+                            viewModel.updateCategory(editing!!, nameInput, selectedColor, isPrivateInput)
                         }
                         showEditor = false
                     },

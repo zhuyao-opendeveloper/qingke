@@ -26,6 +26,7 @@ data class TodoEntity(
     val isDeleted: Boolean = false, // 是否已软删除（回收站）
     val deletedAt: Long? = null, // 移入回收站时间
     val parentId: String? = null, // 父任务ID（子任务）
+    val isPrivate: Boolean = false, // 是否私密（需解锁才能查看）
     val recurrenceRule: String? = null, // 重复规则
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
@@ -48,8 +49,9 @@ data class TodoEntity(
         isArchived = isArchived,
         isDeleted = isDeleted,
         deletedAt = deletedAt,
-        parentId = parentId,
-        recurrenceRule = recurrenceRule,
+            parentId = parentId,
+            isPrivate = isPrivate,
+            recurrenceRule = recurrenceRule,
         createdAt = createdAt,
         updatedAt = updatedAt,
         completedAt = completedAt
@@ -74,6 +76,7 @@ data class TodoEntity(
             isDeleted = item.isDeleted,
             deletedAt = item.deletedAt,
             parentId = item.parentId,
+            isPrivate = item.isPrivate,
             recurrenceRule = item.recurrenceRule,
             createdAt = item.createdAt,
             updatedAt = item.updatedAt,

@@ -112,6 +112,7 @@ data class TodoItem(
     val isDeleted: Boolean = false,
     val deletedAt: Long? = null,
     val parentId: String? = null,
+    val isPrivate: Boolean = false, // 是否私密（开启后需解锁才能查看）
     val recurrenceRule: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),

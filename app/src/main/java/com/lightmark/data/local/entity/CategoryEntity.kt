@@ -13,6 +13,7 @@ data class CategoryEntity(
     val name: String,
     val color: Long = 0xFF6200EE,
     val icon: String = "folder",
+    val isPrivate: Boolean = false, // 是否私密
     val createdAt: Long = System.currentTimeMillis()
 ) {
     fun toDomain(): Category = Category(
@@ -20,6 +21,7 @@ data class CategoryEntity(
         name = name,
         color = color,
         icon = icon,
+        isPrivate = isPrivate,
         createdAt = createdAt
     )
 
@@ -29,6 +31,7 @@ data class CategoryEntity(
             name = cat.name,
             color = cat.color,
             icon = cat.icon,
+            isPrivate = cat.isPrivate,
             createdAt = cat.createdAt
         )
     }

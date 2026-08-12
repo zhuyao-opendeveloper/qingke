@@ -38,24 +38,25 @@ class CategoriesViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    fun addCategory(name: String, color: Long) {
+    fun addCategory(name: String, color: Long, isPrivate: Boolean = false) {
         if (name.isBlank()) return
         viewModelScope.launch {
             categoryDao.insertCategory(
                 CategoryEntity(
                     id = Category.generateId(),
                     name = name.trim(),
-                    color = color
+                    color = color,
+                    isPrivate = isPrivate
                 )
             )
         }
     }
 
-    fun updateCategory(category: Category, name: String, color: Long) {
+    fun updateCategory(category: Category, name: String, color: Long, isPrivate: Boolean = false) {
         viewModelScope.launch {
             categoryDao.updateCategory(
                 CategoryEntity.fromDomain(
-                    category.copy(name = name.trim(), color = color)
+                    category.copy(name = name.trim(), color = color, isPrivate = isPrivate)
                 )
             )
         }
