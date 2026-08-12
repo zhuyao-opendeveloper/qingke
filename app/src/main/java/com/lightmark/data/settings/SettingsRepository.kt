@@ -50,7 +50,8 @@ class SettingsRepository @Inject constructor(
             hapticEnabled = prefs[KEY_HAPTIC_ENABLED] ?: true,
             reminderLeadMinutes = prefs[KEY_REMINDER_LEAD_MINUTES] ?: 10,
             listDensity = prefs[KEY_LIST_DENSITY] ?: "COZY",
-            fontScale = prefs[KEY_FONT_SCALE] ?: 1.0f
+            fontScale = prefs[KEY_FONT_SCALE] ?: 1.0f,
+            biometricLockEnabled = prefs[KEY_BIOMETRIC_LOCK] ?: false
         )
     }
 
@@ -139,6 +140,11 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[KEY_FONT_SCALE] = scale }
     }
 
+    /** 生物识别应用锁开关（#96） */
+    suspend fun setBiometricLockEnabled(enabled: Boolean) {
+        dataStore.edit { it[KEY_BIOMETRIC_LOCK] = enabled }
+    }
+
     companion object {
         private val KEY_PRIVACY_ACCEPTED = booleanPreferencesKey("privacy_accepted")
         private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
@@ -157,6 +163,7 @@ class SettingsRepository @Inject constructor(
         private val KEY_REMINDER_LEAD_MINUTES = intPreferencesKey("reminder_lead_minutes")
         private val KEY_LIST_DENSITY = stringPreferencesKey("list_density")
         private val KEY_FONT_SCALE = floatPreferencesKey("font_scale")
+        private val KEY_BIOMETRIC_LOCK = booleanPreferencesKey("biometric_lock_enabled")
     }
 }
 
@@ -180,5 +187,6 @@ data class LightMarkSettings(
     val hapticEnabled: Boolean = true,
     val reminderLeadMinutes: Int = 10,
     val listDensity: String = "COZY",
-    val fontScale: Float = 1.0f
+    val fontScale: Float = 1.0f,
+    val biometricLockEnabled: Boolean = false
 )

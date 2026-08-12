@@ -91,6 +91,11 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.setFontScale(scale) }
     }
 
+    /** 生物识别应用锁开关（#96） */
+    fun setBiometricLockEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setBiometricLockEnabled(enabled) }
+    }
+
     /** 一键清空本机全部数据（#102） */
     fun clearAllData() {
         viewModelScope.launch { repository.clearAllData() }

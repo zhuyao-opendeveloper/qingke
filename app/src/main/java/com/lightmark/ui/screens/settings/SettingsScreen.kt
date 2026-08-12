@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -462,6 +463,31 @@ fun SettingsScreen(
                 )
             ) {
                 Text("清空本机全部数据")
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.md))
+
+            // #96 生物识别应用锁
+            SectionTitle("安全")
+            LightMarkCard(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("生物识别锁", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Text(
+                            "开启后用指纹或面容解锁才能进入应用",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = settings.biometricLockEnabled,
+                        onCheckedChange = { viewModel.setBiometricLockEnabled(it) }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(Dimens.md))

@@ -19,6 +19,7 @@ import com.lightmark.domain.model.AppSettings
 import com.lightmark.domain.model.IconPack
 import com.lightmark.domain.model.ThemeMode
 import com.lightmark.ui.navigation.LightMarkNavHost
+import com.lightmark.ui.lock.AppLockGate
 import com.lightmark.ui.screens.privacy.PrivacyDialog
 import com.lightmark.ui.theme.LightMarkTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -93,10 +94,12 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     } else {
-                        LightMarkNavHost(
-                            initialRoute = "home",
-                            userId = settings.nickname
-                        )
+                        AppLockGate(biometricLockEnabled = settings.biometricLockEnabled) {
+                            LightMarkNavHost(
+                                initialRoute = "home",
+                                userId = settings.nickname
+                            )
+                        }
                     }
                 }
             }

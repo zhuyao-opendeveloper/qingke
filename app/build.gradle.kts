@@ -31,8 +31,8 @@ android {
         applicationId = "com.lightmark"
         minSdk = 26
         targetSdk = 34
-        versionCode = 8
-        versionName = "2.0.0"
+        versionCode = 9
+        versionName = "2.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
@@ -140,6 +140,9 @@ dependencies {
 
     // DataStore
     implementation(libs.datastore.preferences)
+
+    // 生物识别应用锁（#96）
+    implementation(libs.androidx.biometric)
 
     // Accompanist
     implementation(libs.accompanist.systemuicontroller)
