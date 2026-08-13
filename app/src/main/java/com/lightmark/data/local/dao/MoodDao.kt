@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface MoodDao {
-    @Query("SELECT * FROM moods ORDER BY created_at DESC")
+    @Query("SELECT * FROM moods ORDER BY createdAt DESC")
     fun getAllMoods(): Flow<List<MoodEntity>>
 
-    @Query("SELECT * FROM moods WHERE created_at >= :since ORDER BY created_at DESC")
+    @Query("SELECT * FROM moods WHERE createdAt >= :since ORDER BY createdAt DESC")
     suspend fun getSince(since: Long): List<MoodEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

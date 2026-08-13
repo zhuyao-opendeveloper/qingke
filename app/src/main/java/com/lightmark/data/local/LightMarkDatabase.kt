@@ -77,16 +77,16 @@ abstract class LightMarkDatabase : RoomDatabase() {
         private val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE todos ADD COLUMN energy TEXT NOT NULL DEFAULT 'NONE'")
-                db.execSQL("ALTER TABLE todos ADD COLUMN blocked_by_task_id TEXT")
-                db.execSQL("ALTER TABLE todos ADD COLUMN linked_task_ids TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE todos ADD COLUMN blockedByTaskId TEXT")
+                db.execSQL("ALTER TABLE todos ADD COLUMN linkedTaskIds TEXT NOT NULL DEFAULT ''")
                 db.execSQL("ALTER TABLE todos ADD COLUMN attachments TEXT NOT NULL DEFAULT ''")
-                db.execSQL("ALTER TABLE categories ADD COLUMN parent_id TEXT")
+                db.execSQL("ALTER TABLE categories ADD COLUMN parentId TEXT")
                 db.execSQL(
                     """CREATE TABLE IF NOT EXISTS moods (
                         id TEXT NOT NULL PRIMARY KEY,
                         score INTEGER NOT NULL,
                         note TEXT NOT NULL DEFAULT '',
-                        created_at INTEGER NOT NULL
+                        createdAt INTEGER NOT NULL
                     )"""
                 )
             }
