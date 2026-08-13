@@ -21,10 +21,15 @@ import com.lightmark.domain.model.ThemeMode
 import com.lightmark.ui.navigation.LightMarkNavHost
 import com.lightmark.ui.lock.AppLockGate
 import com.lightmark.ui.screens.privacy.PrivacyDialog
+import com.lightmark.ui.navigation.Routes
 import com.lightmark.ui.theme.LightMarkTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import androidx.lifecycle.lifecycleScope
+import android.content.Intent
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.drawable.Icon
 import kotlinx.coroutines.launch
 
 /**
@@ -51,6 +56,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // 动态快捷方式（#107，纯离线）：长按图标即可快速进入常用页面
+        registerShortcuts()
+
         // Android 13+ 申请通知权限（用于待办到期提醒）
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -60,6 +68,14 @@ class MainActivity : ComponentActivity() {
             ) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
+        }
+
+        // 由快捷方式 / 小部件启动时的目标路由
+        val startRoute = when (intent?.action) {
+            "com.lightmark.action.NEW_TODO" -> Routes.ADD_TODO
+            "com.lightmark.action.MOOD" -> Routes.MOOD
+            "com.lightmark.action.TOOLS" -> Routes.TOOLS
+            else -> Routes.HOME
         }
 
         setContent {
@@ -96,7 +112,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         AppLockGate(biometricLockEnabled = settings.biometricLockEnabled) {
                             LightMarkNavHost(
-                                initialRoute = "home",
+                                initialRoute = startRoute,
                                 userId = settings.nickname
                             )
                         }
@@ -104,5 +120,51 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * 注册动态快捷方式（#107）。
+     * 轻刻为纯本地应用：快捷方式只打开本机页面，不发起任何网络请求。
+     */
+    private fun registerShortcuts() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return
+        val sm = getSystemService(ShortcutManager::class.java) ?: return
+        if (!sm.isRequestPinShortcutSupported) return
+
+        val icon = Icon.createWithResource(this, R.mipmap.ic_launcher)
+
+        fun shortcut(id: String, action: String, short: Int, long: Int): ShortcutInfo =
+            ShortcutInfo.Builder(this, id)
+                .setShortLabel(getString(short))
+                .setLongLabel(getString(long))
+                .setIcon(icon)
+                .setIntent(
+                    Intent(this, MainActivity::class.java).apply {
+                        this.action = action
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    }
+                )
+                .build()
+
+        val newTodo = shortcut(
+            "new_todo",
+            "com.lightmark.action.NEW_TODO",
+            R.string.shortcut_new_todo_short,
+            R.string.shortcut_new_todo_long
+        )
+        val mood = shortcut(
+            "mood",
+            "com.lightmark.action.MOOD",
+            R.string.shortcut_mood_short,
+            R.string.shortcut_mood_long
+        )
+        val tools = shortcut(
+            "tools",
+            "com.lightmark.action.TOOLS",
+            R.string.shortcut_tools_short,
+            R.string.shortcut_tools_long
+        )
+
+        sm.setDynamicShortcuts(listOf(newTodo, mood, tools))
     }
 }

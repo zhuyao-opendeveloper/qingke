@@ -1,4 +1,17 @@
 <resources>
     <string name="app_name">轻刻</string>
     <string name="app_name_english">LightMark</string>
+
+    <!-- 桌面小部件（#63） -->
+    <string name="widget_todo_title">轻刻 · 待办</string>
+    <string name="widget_todo_desc">快速查看待办数量并新建</string>
+    <string name="widget_add">＋ 新建待办</string>
+
+    <!-- 动态快捷方式（#107） -->
+    <string name="shortcut_new_todo_short">新建待办</string>
+    <string name="shortcut_new_todo_long">快速新建一条待办</string>
+    <string name="shortcut_mood_short">心情打卡</string>
+    <string name="shortcut_mood_long">记录此刻心情</string>
+    <string name="shortcut_tools_short">工具箱</string>
+    <string name="shortcut_tools_long">打开工具箱</string>
 </resources>
