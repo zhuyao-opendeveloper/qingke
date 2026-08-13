@@ -1,5 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 启动图标前景：使用从桌面 icon.svg 光栅化出来的位图（见各 mipmap 密度的 ic_launcher.png） -->
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@mipmap/ic_launcher"
-    android:gravity="fill" />
+<!-- 启动图标前景：秒表/时刻图标，纯黑色矢量，用于自适应图标与单色图标 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 秒表外圈 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M54,22 a32,32 0 1,0 0,64 a32,32 0 1,0 0,-64" />
+
+    <!-- 顶部启动按钮 -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M49,17 h10 a2,2 0 0,1 2,2 v5 a2,2 0 0,1 -2,2 h-10 a2,2 0 0,1 -2,-2 v-5 a2,2 0 0,1 2,-2 z" />
+
+    <!-- 时针，约指向 1 点 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M54,54 L60,44" />
+
+    <!-- 分针，约指向 4 点半 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#000000"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M54,54 L71,71" />
+
+</vector>
