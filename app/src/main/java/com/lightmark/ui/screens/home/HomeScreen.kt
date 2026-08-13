@@ -48,7 +48,6 @@ import com.lightmark.ui.components.TodoItemCard
 import com.lightmark.ui.components.priorityLabelOf
 import com.lightmark.ui.theme.Dimens
 import androidx.compose.foundation.gestures.*
-import androidx.compose.foundation.gestures.pointerInput
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
@@ -498,6 +497,7 @@ fun HomeScreen(
                         ) { todo ->
                             Column(
                                 modifier = if (sortOrder == SortOrder.MANUAL) {
+                                    val itemHPx = with(LocalDensity.current) { 76.dp.toPx() }
                                     Modifier
                                         .offset { IntOffset(0, if (draggingId == todo.id) dragOffsetY.roundToInt() else 0) }
                                         .pointerInput(todo.id, sortOrder) {
@@ -508,7 +508,7 @@ fun HomeScreen(
                                                 },
                                                 onDrag = { change, dragAmount ->
                                                     dragOffsetY += dragAmount.y
-                                                    val itemH = with(LocalDensity.current) { 76.dp.toPx() }
+                                                    val itemH = itemHPx
                                                     val base = manualOrderIds.value ?: todos.map { it.id }
                                                     val from = base.indexOf(todo.id)
                                                     if (from < 0) return@detectDragGesturesAfterLongPress
