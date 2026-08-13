@@ -8,6 +8,7 @@ import com.lightmark.data.local.LightMarkDatabase
 import com.lightmark.data.local.dao.AlarmDao
 import com.lightmark.data.local.dao.CategoryDao
 import com.lightmark.data.local.dao.InboxDao
+import com.lightmark.data.local.dao.MoodDao
 import com.lightmark.data.local.dao.SmartListDao
 import com.lightmark.data.local.dao.TodoDao
 import com.lightmark.data.repository.TodoRepository
@@ -88,6 +89,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSmartListDao(database: LightMarkDatabase): SmartListDao = database.smartListDao()
+
+    @Provides
+    @Singleton
+    fun provideMoodDao(database: LightMarkDatabase): MoodDao = database.moodDao()
 
     @Provides
     @Singleton
