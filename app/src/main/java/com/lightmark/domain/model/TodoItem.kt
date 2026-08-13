@@ -116,7 +116,8 @@ data class TodoItem(
     val recurrenceRule: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
-    val completedAt: Long? = null
+    val completedAt: Long? = null,
+    val manualOrder: Int = 0 // 手动排序序号（#32）
 ) {
     companion object {
         fun generateId(): String =

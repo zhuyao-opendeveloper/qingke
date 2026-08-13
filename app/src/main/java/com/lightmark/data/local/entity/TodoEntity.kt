@@ -30,7 +30,8 @@ data class TodoEntity(
     val recurrenceRule: String? = null, // 重复规则
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
-    val completedAt: Long? = null
+    val completedAt: Long? = null,
+    val manualOrder: Int = 0 // 手动排序序号（#32）
 ) {
     /** 转换为领域模型 */
     fun toDomain(): TodoItem = TodoItem(
@@ -54,7 +55,8 @@ data class TodoEntity(
             recurrenceRule = recurrenceRule,
         createdAt = createdAt,
         updatedAt = updatedAt,
-        completedAt = completedAt
+        completedAt = completedAt,
+        manualOrder = manualOrder
     )
 
     companion object {
@@ -80,7 +82,8 @@ data class TodoEntity(
             recurrenceRule = item.recurrenceRule,
             createdAt = item.createdAt,
             updatedAt = item.updatedAt,
-            completedAt = item.completedAt
+            completedAt = item.completedAt,
+            manualOrder = item.manualOrder
         )
     }
 }

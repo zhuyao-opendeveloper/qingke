@@ -47,6 +47,9 @@ import com.lightmark.ui.components.QuickAddDialog
 import com.lightmark.ui.components.TodoItemCard
 import com.lightmark.ui.components.priorityLabelOf
 import com.lightmark.ui.theme.Dimens
+import androidx.compose.foundation.gestures.*
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 
 /**
  * 首页——待办清单主界面
@@ -89,6 +92,18 @@ fun HomeScreen(
     val hapticEnabled by viewModel.hapticEnabled.collectAsState()
     val listDensity by viewModel.listDensity.collectAsState()
     val smartLists by viewModel.smartLists.collectAsState()
+    val sortOrder by viewModel.sortOrder.collectAsState()
+    val fontScale by viewModel.fontScale.collectAsState()
+
+    // 手动排序拖拽状态（#32）
+    var draggingId by remember { mutableStateOf<String?>(null) }
+    var dragOffsetY by remember { mutableStateOf(0f) }
+    val manualOrderIds = remember(sortOrder) { mutableStateOf<List<String>?>(null) }
+    val displayList = if (sortOrder == SortOrder.MANUAL) {
+        manualOrderIds.value?.let { order ->
+            todos.sortedBy { order.indexOf(it.id).takeIf { i -> i >= 0 } ?: Int.MAX_VALUE }
+        } ?: todos
+    } else todos
     val biometricLockEnabled by viewModel.biometricLockEnabled.collectAsState()
     val showPrivate by viewModel.showPrivate.collectAsState()
     val iconProvider = viewModel.currentIconProvider
@@ -283,6 +298,7 @@ fun HomeScreen(
                         )
                         GroupMode.entries.forEach { mode ->
                             DropdownMenuItem(
+                                enabled = sortOrder != SortOrder.MANUAL,
                                 text = { Text(mode.label) },
                                 onClick = {
                                     viewModel.setGroupMode(mode)
@@ -445,10 +461,11 @@ fun HomeScreen(
                     val baseDensity = LocalDensity.current
                     val densityFactor = when (listDensity) {
                         "COMPACT" -> 0.85f
+                        "DETAILED" -> 1.15f
                         else -> 1.0f
                     }
                     CompositionLocalProvider(
-                        LocalDensity provides Density(baseDensity.density * densityFactor, baseDensity.fontScale)
+                        LocalDensity provides Density(baseDensity.density * densityFactor, fontScale)
                     ) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -474,10 +491,49 @@ fun HomeScreen(
                         }
 
                         items(
-                            items = todos,
+                            items = displayList,
                             key = { it.id }
                         ) { todo ->
-                            Column {
+                            Column(
+                                modifier = if (sortOrder == SortOrder.MANUAL) {
+                                    Modifier
+                                        .offset { IntOffset(0, if (draggingId == todo.id) dragOffsetY.roundToInt() else 0) }
+                                        .pointerInput(todo.id, sortOrder) {
+                                            detectDragGesturesAfterLongPress(
+                                                onDragStart = {
+                                                    draggingId = todo.id
+                                                    dragOffsetY = 0f
+                                                },
+                                                onDrag = { change, dragAmount ->
+                                                    dragOffsetY += dragAmount.y
+                                                    val itemH = with(LocalDensity.current) { 76.dp.toPx() }
+                                                    val base = manualOrderIds.value ?: todos.map { it.id }
+                                                    val from = base.indexOf(todo.id)
+                                                    if (from < 0) return@detectDragGesturesAfterLongPress
+                                                    val maxIdx = (displayList.size - 1).coerceAtLeast(0)
+                                                    val target = (from + (dragOffsetY / itemH).toInt())
+                                                        .coerceIn(0, maxIdx)
+                                                    if (target != from) {
+                                                        val cur = base.toMutableList()
+                                                        cur.add(target, cur.removeAt(from))
+                                                        manualOrderIds.value = cur
+                                                        dragOffsetY -= (target - from) * itemH
+                                                    }
+                                                    change.consume()
+                                                },
+                                                onDragEnd = {
+                                                    viewModel.applyManualOrder(manualOrderIds.value ?: displayList.map { it.id })
+                                                    draggingId = null
+                                                    dragOffsetY = 0f
+                                                },
+                                                onDragCancel = {
+                                                    draggingId = null
+                                                    dragOffsetY = 0f
+                                                }
+                                            )
+                                        }
+                                } else Modifier
+                            ) {
                             groupLabels[todo.id]?.let { label ->
                                 Text(
                                     text = label,
@@ -629,4 +685,5 @@ private fun sortLabel(order: SortOrder): String = when (order) {
     SortOrder.PRIORITY_DESC -> "优先级高→低"
     SortOrder.DUE_DATE_ASC -> "截止时间近→远"
     SortOrder.ALPHABETICAL -> "按标题"
+    SortOrder.MANUAL -> "手动排序"
 }

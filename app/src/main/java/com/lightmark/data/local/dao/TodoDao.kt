@@ -71,6 +71,10 @@ interface TodoDao {
     @Update
     suspend fun updateTodo(todo: TodoEntity)
 
+    /** 更新手动排序序号（#32） */
+    @Query("UPDATE todos SET manualOrder = :order WHERE id = :id")
+    suspend fun updateManualOrder(id: String, order: Int)
+
     /** 删除 */
     @Delete
     suspend fun deleteTodo(todo: TodoEntity)

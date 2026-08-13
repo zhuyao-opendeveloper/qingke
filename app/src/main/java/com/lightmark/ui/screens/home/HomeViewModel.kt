@@ -110,6 +110,10 @@ class HomeViewModel @Inject constructor(
     private val _listDensity = MutableStateFlow("COZY")
     val listDensity: StateFlow<String> = _listDensity.asStateFlow()
 
+    /** 全局字号缩放系数（#61） */
+    private val _fontScale = MutableStateFlow(1.0f)
+    val fontScale: StateFlow<Float> = _fontScale.asStateFlow()
+
     init {
         viewModelScope.launch {
             cleanupTrash()
@@ -127,6 +131,11 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.settings.map { it.listDensity }.collect { density ->
                 _listDensity.value = density
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.settings.map { it.fontScale }.collect { scale ->
+                _fontScale.value = scale
             }
         }
         viewModelScope.launch {
@@ -209,6 +218,7 @@ class HomeViewModel @Inject constructor(
             SortOrder.PRIORITY_DESC -> compareByDescending { it.priority.ordinal }
             SortOrder.DUE_DATE_ASC -> compareBy { it.dueDate ?: Long.MAX_VALUE }
             SortOrder.ALPHABETICAL -> compareBy { it.title }
+            SortOrder.MANUAL -> compareBy { it.manualOrder }
         }
 
         // 置顶优先，组内保持所选排序（稳定排序）
@@ -629,6 +639,17 @@ class HomeViewModel @Inject constructor(
 
     fun setSortOrder(order: SortOrder) {
         _sortOrder.value = order
+        // 手动排序与分组显示互斥，进入手动模式时取消分组（#32）
+        if (order == SortOrder.MANUAL) _groupMode.value = GroupMode.NONE
+    }
+
+    /** 持久化手动排序（#32）：按列表顺序写入 manualOrder 序号 */
+    fun applyManualOrder(orderedIds: List<String>) {
+        viewModelScope.launch {
+            orderedIds.forEachIndexed { index, id ->
+                runCatching { todoDao.updateManualOrder(id, index) }
+            }
+        }
     }
 
     fun filterByCategory(categoryId: String?) {
@@ -653,7 +674,8 @@ enum class SortOrder {
     CREATED_ASC,
     PRIORITY_DESC,
     DUE_DATE_ASC,
-    ALPHABETICAL
+    ALPHABETICAL,
+    MANUAL // 手动拖拽排序（#32）
 }
 
 /** 快速筛选（智能清单，#59） */

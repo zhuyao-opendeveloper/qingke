@@ -37,7 +37,7 @@ import com.lightmark.data.local.entity.SmartListEntity
         TemplateEntity::class,
         SmartListEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 abstract class LightMarkDatabase : RoomDatabase() {
@@ -62,6 +62,13 @@ abstract class LightMarkDatabase : RoomDatabase() {
             }
         }
 
+        /** v8 → v9：新增手动排序序号列，保留原有数据（#32） */
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE todos ADD COLUMN manual_order INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         @Volatile
         private var INSTANCE: LightMarkDatabase? = null
 
@@ -72,7 +79,7 @@ abstract class LightMarkDatabase : RoomDatabase() {
                     LightMarkDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .addMigrations(MIGRATION_7_8)
+                    .addMigrations(MIGRATION_7_8, MIGRATION_8_9)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
