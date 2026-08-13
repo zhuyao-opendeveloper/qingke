@@ -48,6 +48,8 @@ import com.lightmark.ui.components.TodoItemCard
 import com.lightmark.ui.components.priorityLabelOf
 import com.lightmark.ui.theme.Dimens
 import androidx.compose.foundation.gestures.*
+import androidx.compose.foundation.gestures.pointerInput
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
 
