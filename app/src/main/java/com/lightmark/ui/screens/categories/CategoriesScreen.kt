@@ -273,11 +273,11 @@ fun CategoriesScreen(
             title = { Text("选择父分类") },
             text = {
                 Column {
-                    CategoryOption("无（顶级分类）", parentIdInput == null) {
+                    ParentCatRow("无（顶级分类）", parentIdInput == null) {
                         parentIdInput = null; showParentCatDialog = false
                     }
                     categories.filter { it.id != editing?.id }.forEach { c ->
-                        CategoryOption(c.name, parentIdInput == c.id) {
+                        ParentCatRow(c.name, parentIdInput == c.id) {
                             parentIdInput = c.id; showParentCatDialog = false
                         }
                     }
@@ -313,3 +313,15 @@ private val PRESET_COLORS = listOf(
     0xFFE91E63, 0xFF009688, 0xFFF44336, 0xFF3F51B5,
     0xFF795548, 0xFF607D8B, 0xFF9C27B0, 0xFF00BCD4
 )
+
+@Composable
+private fun ParentCatRow(name: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.sm),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        Spacer(modifier = Modifier.width(Dimens.sm))
+        Text(text = name, fontSize = 15.sp)
+    }
+}

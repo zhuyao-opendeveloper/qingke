@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -61,6 +62,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -120,20 +122,17 @@ fun AddEditTodoScreen(
 
     val context = LocalContext.current
 
-    // 附件选择器（#6）：可多选本地文件，持久化只读权限
+    // 附件选择器（#6）：挑选本地文件，持久化只读权限（可多次添加）
     val attachmentLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentMultiple()
-    ) { uris ->
-        if (!uris.isNullOrEmpty()) {
-            val newUris = uris.map { uri ->
-                try {
-                    context.contentResolver.takePersistableUriPermission(
-                        uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                } catch (_: Exception) { /* 部分提供器不支持持久权限，忽略 */ }
-                uri.toString()
-            }
-            viewModel.addAttachments(newUris)
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: Exception) { /* 部分提供器不支持持久权限，忽略 */ }
+            viewModel.addAttachments(listOf(uri.toString()))
         }
     }
 
