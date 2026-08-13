@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Dashboard
@@ -73,6 +74,7 @@ fun ToolsScreen(
             ToolCard("表格视图", "类 Excel 表格，一屏对比全部字段", Icons.Filled.TableChart) { onNavigate("table") }
             ToolCard("回顾复盘", "周报 / 月报，完成率、分布与逾期清理", Icons.Filled.Insights) { onNavigate("review") }
             ToolCard("标签管理", "重命名 / 合并 / 删除标签，统一改写所有待办", Icons.Filled.Sell) { onNavigate("tags") }
+            ToolCard("心情记录", "每日打卡心情分数，回顾情绪变化", Icons.Filled.Favorite) { onNavigate("mood") }
             ToolCard("备份与导出", "JSON 备份、Markdown / CSV / HTML / iCal 导出与导入", Icons.Filled.Backup) { onNavigate("backup") }
             LightMarkCard(
                 modifier = Modifier.fillMaxWidth(),

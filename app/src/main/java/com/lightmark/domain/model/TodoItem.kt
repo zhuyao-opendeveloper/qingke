@@ -117,7 +117,11 @@ data class TodoItem(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null,
-    val manualOrder: Int = 0 // 手动排序序号（#32）
+    val manualOrder: Int = 0, // 手动排序序号（#32）
+    val energy: String = "NONE", // 精力标记（#36）：NONE/LOW/MEDIUM/HIGH
+    val blockedByTaskId: String? = null, // 被此任务依赖阻塞（#16）
+    val linkedTaskIds: List<String> = emptyList(), // 双向链接的任务ID（#34）
+    val attachments: List<String> = emptyList() // 附件URI列表（#6）
 ) {
     companion object {
         fun generateId(): String =

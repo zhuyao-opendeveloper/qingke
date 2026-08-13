@@ -52,6 +52,8 @@ fun CategoriesScreen(
     var nameInput by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(PRESET_COLORS[0]) }
     var isPrivateInput by remember { mutableStateOf(false) }
+    var parentIdInput by remember { mutableStateOf<String?>(null) }
+    var showParentCatDialog by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<Category?>(null) }
 
     Scaffold(
@@ -75,6 +77,7 @@ fun CategoriesScreen(
                     nameInput = ""
                     selectedColor = PRESET_COLORS[0]
                     isPrivateInput = false
+                    parentIdInput = null
                     showEditor = true
                 },
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -117,6 +120,7 @@ fun CategoriesScreen(
                             nameInput = cat.name
                             selectedColor = cat.color
                             isPrivateInput = cat.isPrivate
+                            parentIdInput = cat.parentId
                             showEditor = true
                         }
                     ) {
@@ -134,7 +138,7 @@ fun CategoriesScreen(
                             )
                             Spacer(modifier = Modifier.width(Dimens.md))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(cat.name, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                                Text((if (cat.parentId != null) "↳ " else "") + cat.name, fontSize = 16.sp, fontWeight = FontWeight.Medium)
                                 Text(
                                     text = "$count 条待办",
                                     fontSize = 12.sp,
@@ -169,6 +173,21 @@ fun CategoriesScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    Spacer(modifier = Modifier.height(Dimens.md))
+                    // 父分类（文件夹层级，#27）
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+                    ) {
+                        Text("父分类", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.width(56.dp))
+                        FilledTonalButton(onClick = { showParentCatDialog = true }) {
+                            val pname = categories.find { it.id == parentIdInput }?.name ?: "无（顶级分类）"
+                            Text(if (pname.length > 12) pname.take(12) + "…" else pname)
+                        }
+                    }
                     Spacer(modifier = Modifier.height(Dimens.md))
                     Text("颜色", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(Dimens.sm))
@@ -230,9 +249,9 @@ fun CategoriesScreen(
                 TextButton(
                     onClick = {
                         if (editing == null) {
-                            viewModel.addCategory(nameInput, selectedColor, isPrivateInput)
+                            viewModel.addCategory(nameInput, selectedColor, isPrivateInput, parentIdInput)
                         } else {
-                            viewModel.updateCategory(editing!!, nameInput, selectedColor, isPrivateInput)
+                            viewModel.updateCategory(editing!!, nameInput, selectedColor, isPrivateInput, parentIdInput)
                         }
                         showEditor = false
                     },
@@ -243,6 +262,29 @@ fun CategoriesScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showEditor = false }) { Text("取消") }
+            }
+        )
+    }
+
+    // 父分类选择弹窗（#27）
+    if (showParentCatDialog) {
+        AlertDialog(
+            onDismissRequest = { showParentCatDialog = false },
+            title = { Text("选择父分类") },
+            text = {
+                Column {
+                    CategoryOption("无（顶级分类）", parentIdInput == null) {
+                        parentIdInput = null; showParentCatDialog = false
+                    }
+                    categories.filter { it.id != editing?.id }.forEach { c ->
+                        CategoryOption(c.name, parentIdInput == c.id) {
+                            parentIdInput = c.id; showParentCatDialog = false
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showParentCatDialog = false }) { Text("取消") }
             }
         )
     }

@@ -11,6 +11,7 @@ import com.lightmark.data.local.dao.InboxDao
 import com.lightmark.data.local.dao.TemplateDao
 import com.lightmark.data.local.dao.TodoDao
 import com.lightmark.data.local.dao.SmartListDao
+import com.lightmark.data.local.dao.MoodDao
 import com.lightmark.data.local.entity.AlarmEntity
 import com.lightmark.data.local.entity.CategoryEntity
 import com.lightmark.data.local.entity.GoalEntity
@@ -20,6 +21,7 @@ import com.lightmark.data.local.entity.InboxEntity
 import com.lightmark.data.local.entity.TemplateEntity
 import com.lightmark.data.local.entity.TodoEntity
 import com.lightmark.data.local.entity.SmartListEntity
+import com.lightmark.data.local.entity.MoodEntity
 
 /**
  * 轻刻本地数据库
@@ -35,9 +37,10 @@ import com.lightmark.data.local.entity.SmartListEntity
         HabitCheckEntity::class,
         GoalEntity::class,
         TemplateEntity::class,
-        SmartListEntity::class
+        SmartListEntity::class,
+        MoodEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class LightMarkDatabase : RoomDatabase() {
@@ -50,6 +53,7 @@ abstract class LightMarkDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao
     abstract fun templateDao(): TemplateDao
     abstract fun smartListDao(): SmartListDao
+    abstract fun moodDao(): MoodDao
 
     companion object {
         const val DATABASE_NAME = "lightmark_db"
@@ -69,6 +73,25 @@ abstract class LightMarkDatabase : RoomDatabase() {
             }
         }
 
+        /** v9 → v10：新增精力/依赖/双向链接/附件列、分类父级、moods 表（Wave 6，保留旧数据） */
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE todos ADD COLUMN energy TEXT NOT NULL DEFAULT 'NONE'")
+                db.execSQL("ALTER TABLE todos ADD COLUMN blocked_by_task_id TEXT")
+                db.execSQL("ALTER TABLE todos ADD COLUMN linked_task_ids TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE todos ADD COLUMN attachments TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE categories ADD COLUMN parent_id TEXT")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS moods (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        score INTEGER NOT NULL,
+                        note TEXT NOT NULL DEFAULT '',
+                        created_at INTEGER NOT NULL
+                    )"""
+                )
+            }
+        }
+
         @Volatile
         private var INSTANCE: LightMarkDatabase? = null
 
@@ -79,7 +102,7 @@ abstract class LightMarkDatabase : RoomDatabase() {
                     LightMarkDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .addMigrations(MIGRATION_7_8, MIGRATION_8_9)
+                    .addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

@@ -31,7 +31,11 @@ data class TodoEntity(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null,
-    val manualOrder: Int = 0 // 手动排序序号（#32）
+    val manualOrder: Int = 0, // 手动排序序号（#32）
+    val energy: String = "NONE", // 精力标记（#36）
+    val blockedByTaskId: String? = null, // 依赖阻塞（#16）
+    val linkedTaskIds: String = "", // 双向链接ID，逗号分隔（#34）
+    val attachments: String = "" // 附件URI，逗号分隔（#6）
 ) {
     /** 转换为领域模型 */
     fun toDomain(): TodoItem = TodoItem(
@@ -56,7 +60,13 @@ data class TodoEntity(
         createdAt = createdAt,
         updatedAt = updatedAt,
         completedAt = completedAt,
-        manualOrder = manualOrder
+        manualOrder = manualOrder,
+        energy = energy,
+        blockedByTaskId = blockedByTaskId,
+        linkedTaskIds = if (linkedTaskIds.isBlank()) emptyList()
+            else linkedTaskIds.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+        attachments = if (attachments.isBlank()) emptyList()
+            else attachments.split(",").map { it.trim() }.filter { it.isNotEmpty() }
     )
 
     companion object {
@@ -83,7 +93,11 @@ data class TodoEntity(
             createdAt = item.createdAt,
             updatedAt = item.updatedAt,
             completedAt = item.completedAt,
-            manualOrder = item.manualOrder
+            manualOrder = item.manualOrder,
+            energy = item.energy,
+            blockedByTaskId = item.blockedByTaskId,
+            linkedTaskIds = item.linkedTaskIds.joinToString(","),
+            attachments = item.attachments.joinToString(",")
         )
     }
 }

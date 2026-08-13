@@ -37,6 +37,7 @@ import com.lightmark.ui.screens.template.TemplateScreen
 import com.lightmark.ui.screens.todo.AddEditTodoScreen
 import com.lightmark.ui.screens.tools.ToolsScreen
 import com.lightmark.ui.screens.tags.TagManageScreen
+import com.lightmark.ui.screens.mood.MoodScreen
 import com.lightmark.ui.screens.smartlist.SmartListsScreen
 import com.lightmark.ui.screens.focus.FocusScreen
 import com.lightmark.icons.IconProvider
@@ -68,6 +69,7 @@ object Routes {
     const val FOCUS = "focus/{todoId}"
     const val TAGS = "tags"
     const val SMART_LISTS = "smart_lists"
+    const val MOOD = "mood"
 
     fun editTodo(todoId: String) = "edit_todo/$todoId"
     fun focus(todoId: String) = "focus/$todoId"
@@ -284,6 +286,12 @@ fun LightMarkNavHost(
 
             composable(Routes.SMART_LISTS) {
                 SmartListsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.MOOD) {
+                MoodScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

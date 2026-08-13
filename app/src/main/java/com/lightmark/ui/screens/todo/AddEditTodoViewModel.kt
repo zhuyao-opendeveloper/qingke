@@ -79,6 +79,18 @@ class AddEditTodoViewModel @Inject constructor(
     private val _isPrivate = MutableStateFlow(false)
     val isPrivate: StateFlow<Boolean> = _isPrivate.asStateFlow()
 
+    private val _energy = MutableStateFlow("NONE") // 精力标记（#36）
+    val energy: StateFlow<String> = _energy.asStateFlow()
+
+    private val _blockedByTaskId = MutableStateFlow<String?>(null) // 依赖阻塞（#16）
+    val blockedByTaskId: StateFlow<String?> = _blockedByTaskId.asStateFlow()
+
+    private val _linkedTaskIds = MutableStateFlow<List<String>>(emptyList()) // 双向链接（#34）
+    val linkedTaskIds: StateFlow<List<String>> = _linkedTaskIds.asStateFlow()
+
+    private val _attachments = MutableStateFlow<List<String>>(emptyList()) // 附件URI（#6）
+    val attachments: StateFlow<List<String>> = _attachments.asStateFlow()
+
     /** 可作为父任务的候选（排除已删除与自身） */
     val parentCandidates: StateFlow<List<TodoItem>> = todoDao.getAllTodos()
         .map { list -> list.filter { !it.isDeleted }.map { it.toDomain() } }
@@ -125,6 +137,12 @@ class AddEditTodoViewModel @Inject constructor(
             _recurrenceRule.value = todo.recurrenceRule
             _parentId.value = todo.parentId
             _isPrivate.value = todo.isPrivate
+            _energy.value = todo.energy
+            _blockedByTaskId.value = todo.blockedByTaskId
+            _linkedTaskIds.value = if (todo.linkedTaskIds.isBlank()) emptyList()
+                else todo.linkedTaskIds.split(",").map { it.trim() }
+            _attachments.value = if (todo.attachments.isBlank()) emptyList()
+                else todo.attachments.split(",").map { it.trim() }
         }
     }
 
@@ -140,6 +158,18 @@ class AddEditTodoViewModel @Inject constructor(
     fun setRecurrenceRule(rule: String?) { _recurrenceRule.value = rule }
     fun setParentId(id: String?) { _parentId.value = id }
     fun setPrivate(private: Boolean) { _isPrivate.value = private }
+    fun setEnergy(energy: String) { _energy.value = energy }
+    fun setBlockedBy(id: String?) { _blockedByTaskId.value = id }
+    fun toggleLinkedTask(id: String) {
+        _linkedTaskIds.value = if (_linkedTaskIds.value.contains(id))
+            _linkedTaskIds.value - id else _linkedTaskIds.value + id
+    }
+    fun addAttachments(uris: List<String>) {
+        _attachments.value = (_attachments.value + uris).distinct()
+    }
+    fun removeAttachment(uri: String) {
+        _attachments.value = _attachments.value - uri
+    }
     fun setReminderEnabled(enabled: Boolean) { _reminderEnabled.value = enabled }
 
     fun addTag(tag: String) {
@@ -233,6 +263,10 @@ class AddEditTodoViewModel @Inject constructor(
                     parentId = _parentId.value,
                     isPrivate = _isPrivate.value,
                     recurrenceRule = _recurrenceRule.value,
+                    energy = _energy.value,
+                    blockedByTaskId = _blockedByTaskId.value,
+                    linkedTaskIds = _linkedTaskIds.value.joinToString(","),
+                    attachments = _attachments.value.joinToString(","),
                     updatedAt = now
                 )
                 todoDao.updateTodo(updated)
@@ -252,6 +286,10 @@ class AddEditTodoViewModel @Inject constructor(
                     parentId = _parentId.value,
                     isPrivate = _isPrivate.value,
                     recurrenceRule = _recurrenceRule.value,
+                    energy = _energy.value,
+                    blockedByTaskId = _blockedByTaskId.value,
+                    linkedTaskIds = _linkedTaskIds.value.joinToString(","),
+                    attachments = _attachments.value.joinToString(","),
                     createdAt = now,
                     updatedAt = now
                 )

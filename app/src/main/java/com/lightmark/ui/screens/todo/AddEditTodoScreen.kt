@@ -23,7 +23,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Schedule
@@ -60,7 +63,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.hilt.navigation.compose.hiltViewModel
+import android.content.Intent
+import android.net.Uri
 import com.lightmark.domain.model.Priority
 import com.lightmark.domain.model.Recurrence
 import com.lightmark.domain.model.TodoStatus
@@ -96,6 +103,10 @@ fun AddEditTodoScreen(
     val recurrenceRule by viewModel.recurrenceRule.collectAsState()
     val parentId by viewModel.parentId.collectAsState()
     val parentCandidates by viewModel.parentCandidates.collectAsState()
+    val energy by viewModel.energy.collectAsState()
+    val blockedByTaskId by viewModel.blockedByTaskId.collectAsState()
+    val linkedTaskIds by viewModel.linkedTaskIds.collectAsState()
+    val attachments by viewModel.attachments.collectAsState()
     val reminderEnabled by viewModel.reminderEnabled.collectAsState()
     val aiState by viewModel.aiState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -104,8 +115,27 @@ fun AddEditTodoScreen(
     var tagInput by remember { mutableStateOf("") }
     var showCategoryDialog by remember { mutableStateOf(false) }
     var showParentDialog by remember { mutableStateOf(false) }
+    var showBlockedDialog by remember { mutableStateOf(false) }
+    var showLinkDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+
+    // 附件选择器（#6）：可多选本地文件，持久化只读权限
+    val attachmentLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentMultiple()
+    ) { uris ->
+        if (!uris.isNullOrEmpty()) {
+            val newUris = uris.map { uri ->
+                try {
+                    context.contentResolver.takePersistableUriPermission(
+                        uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                } catch (_: Exception) { /* 部分提供器不支持持久权限，忽略 */ }
+                uri.toString()
+            }
+            viewModel.addAttachments(newUris)
+        }
+    }
 
     LaunchedEffect(todoId) {
         if (todoId != null) {
@@ -447,6 +477,96 @@ fun AddEditTodoScreen(
 
             Spacer(modifier = Modifier.height(Dimens.lg))
 
+            // 精力标记（#36）
+            Text("精力", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface)
+            Spacer(modifier = Modifier.height(Dimens.sm))
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                listOf("NONE" to "无", "LOW" to "低", "MEDIUM" to "中", "HIGH" to "高").forEach { (value, label) ->
+                    FilterChip(
+                        selected = energy == value,
+                        onClick = { viewModel.setEnergy(value) },
+                        label = { Text(label, fontSize = 13.sp) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 依赖阻塞（#16）
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+            ) {
+                Icon(imageVector = Icons.Filled.LinkOff, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Text("被以下任务阻塞", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f))
+                FilledTonalButton(onClick = { showBlockedDialog = true }) {
+                    val name = parentCandidates.find { it.id == blockedByTaskId }?.title ?: "无"
+                    Text(if (name.length > 12) name.take(12) + "…" else name)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 双向链接（#34）
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+            ) {
+                Icon(imageVector = Icons.Filled.Link, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Text("关联任务（双向链接）", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f))
+                FilledTonalButton(onClick = { showLinkDialog = true }) {
+                    Text(if (linkedTaskIds.isEmpty()) "选择" else "${linkedTaskIds.size} 个")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 附件（#6）
+            Text("附件", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface)
+            Spacer(modifier = Modifier.height(Dimens.sm))
+            FilledTonalButton(onClick = { attachmentLauncher.launch(arrayOf("*/*")) }) {
+                Icon(imageVector = Icons.Filled.AttachFile, contentDescription = null,
+                    modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(Dimens.sm))
+                Text("添加附件")
+            }
+            if (attachments.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(Dimens.sm))
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                    attachments.forEach { uri ->
+                        val raw = uri.substringAfterLast("/").substringAfterLast(":")
+                        val name = if (raw.isNotBlank()) raw else uri
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Dimens.sm)
+                        ) {
+                            Icon(imageVector = Icons.Filled.AttachFile, contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                            Text(name, fontSize = 13.sp, modifier = Modifier.weight(1f),
+                                maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            IconButton(onClick = { viewModel.removeAttachment(uri) }) {
+                                Icon(imageVector = MaterialIconProvider.close, contentDescription = "移除",
+                                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(18.dp))
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
             // 重复规则
             Text("重复", fontSize = 14.sp, fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface)
@@ -589,6 +709,59 @@ fun AddEditTodoScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showParentDialog = false }) { Text("取消") }
+            }
+        )
+    }
+
+    // 依赖阻塞选择弹窗（#16）
+    if (showBlockedDialog) {
+        AlertDialog(
+            onDismissRequest = { showBlockedDialog = false },
+            title = { Text("被哪个任务阻塞") },
+            text = {
+                Column {
+                    CategoryOption("无", blockedByTaskId == null) {
+                        viewModel.setBlockedBy(null); showBlockedDialog = false
+                    }
+                    parentCandidates.filter { it.id != todoId }.forEach { p ->
+                        CategoryOption(p.title, blockedByTaskId == p.id) {
+                            viewModel.setBlockedBy(p.id); showBlockedDialog = false
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showBlockedDialog = false }) { Text("取消") }
+            }
+        )
+    }
+
+    // 双向链接选择弹窗（#34）
+    if (showLinkDialog) {
+        AlertDialog(
+            onDismissRequest = { showLinkDialog = false },
+            title = { Text("关联任务（可多选）") },
+            text = {
+                Column {
+                    parentCandidates.filter { it.id != todoId }.forEach { p ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = Dimens.sm),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = linkedTaskIds.contains(p.id),
+                                onCheckedChange = { viewModel.toggleLinkedTask(p.id) }
+                            )
+                            Spacer(modifier = Modifier.width(Dimens.sm))
+                            Text(p.title, fontSize = 15.sp, modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLinkDialog = false }) { Text("完成") }
             }
         )
     }

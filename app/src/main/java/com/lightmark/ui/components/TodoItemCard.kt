@@ -148,7 +148,7 @@ fun TodoItemCard(
                 }
 
                 // 底部信息（标签、截止日期、子任务、阻塞、重复）
-                if (item.tags.isNotEmpty() || item.dueDate != null || subtaskCount > 0 || item.isBlocked || !item.recurrenceRule.isNullOrBlank()) {
+                if (item.tags.isNotEmpty() || item.dueDate != null || subtaskCount > 0 || item.isBlocked || !item.recurrenceRule.isNullOrBlank() || item.energy != "NONE" || item.linkedTaskIds.isNotEmpty() || item.attachments.isNotEmpty()) {
                     Row(
                         modifier = Modifier.padding(top = Dimens.sm),
                         horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
@@ -168,6 +168,20 @@ fun TodoItemCard(
                         }
                         if (!item.recurrenceRule.isNullOrBlank() && item.recurrenceRule != Recurrence.NONE) {
                             TagChip(text = Recurrence.label(item.recurrenceRule))
+                        }
+                        if (item.energy != "NONE") {
+                            TagChip(text = "精力·" + when (item.energy) {
+                                "LOW" -> "低"; "MEDIUM" -> "中"; "HIGH" -> "高"; else -> item.energy
+                            })
+                        }
+                        if (item.blockedByTaskId != null) {
+                            TagChip(text = "依赖阻塞")
+                        }
+                        if (item.linkedTaskIds.isNotEmpty()) {
+                            TagChip(text = "关联 ${item.linkedTaskIds.size}")
+                        }
+                        if (item.attachments.isNotEmpty()) {
+                            TagChip(text = "附件 ${item.attachments.size}")
                         }
                     }
                 }
