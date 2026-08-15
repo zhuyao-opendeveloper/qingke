@@ -40,7 +40,7 @@ import com.lightmark.data.local.entity.MoodEntity
         SmartListEntity::class,
         MoodEntity::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 abstract class LightMarkDatabase : RoomDatabase() {
@@ -92,6 +92,15 @@ abstract class LightMarkDatabase : RoomDatabase() {
             }
         }
 
+        /** v10 → v11：新增任务备注/预计耗时、习惯暂停（#7 / #87 / #93，保留旧数据） */
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE todos ADD COLUMN notes TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE todos ADD COLUMN estimated_minutes INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE habits ADD COLUMN paused INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         @Volatile
         private var INSTANCE: LightMarkDatabase? = null
 
@@ -102,7 +111,7 @@ abstract class LightMarkDatabase : RoomDatabase() {
                     LightMarkDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                    .addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

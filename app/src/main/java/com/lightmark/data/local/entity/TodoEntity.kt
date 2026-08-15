@@ -35,7 +35,9 @@ data class TodoEntity(
     val energy: String = "NONE", // 精力标记（#36）
     val blockedByTaskId: String? = null, // 依赖阻塞（#16）
     val linkedTaskIds: String = "", // 双向链接ID，逗号分隔（#34）
-    val attachments: String = "" // 附件URI，逗号分隔（#6）
+    val attachments: String = "", // 附件URI，逗号分隔（#6）
+    val notes: String = "", // 备注/进展记录（#7）
+    val estimatedMinutes: Int = 0 // 预计耗时（分钟，#87）
 ) {
     /** 转换为领域模型 */
     fun toDomain(): TodoItem = TodoItem(
@@ -66,7 +68,9 @@ data class TodoEntity(
         linkedTaskIds = if (linkedTaskIds.isBlank()) emptyList()
             else linkedTaskIds.split(",").map { it.trim() }.filter { it.isNotEmpty() },
         attachments = if (attachments.isBlank()) emptyList()
-            else attachments.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+            else attachments.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+        notes = notes,
+        estimatedMinutes = estimatedMinutes
     )
 
     companion object {
@@ -97,7 +101,9 @@ data class TodoEntity(
             energy = item.energy,
             blockedByTaskId = item.blockedByTaskId,
             linkedTaskIds = item.linkedTaskIds.joinToString(","),
-            attachments = item.attachments.joinToString(",")
+            attachments = item.attachments.joinToString(","),
+            notes = item.notes,
+            estimatedMinutes = item.estimatedMinutes
         )
     }
 }

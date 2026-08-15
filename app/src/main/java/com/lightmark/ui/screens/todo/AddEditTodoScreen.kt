@@ -109,6 +109,8 @@ fun AddEditTodoScreen(
     val blockedByTaskId by viewModel.blockedByTaskId.collectAsState()
     val linkedTaskIds by viewModel.linkedTaskIds.collectAsState()
     val attachments by viewModel.attachments.collectAsState()
+    val notes by viewModel.notes.collectAsState()
+    val estimatedMinutes by viewModel.estimatedMinutes.collectAsState()
     val reminderEnabled by viewModel.reminderEnabled.collectAsState()
     val aiState by viewModel.aiState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -562,6 +564,40 @@ fun AddEditTodoScreen(
                         }
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 备注 / 进展（#7）
+            Text("备注 / 进展记录", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface)
+            Spacer(modifier = Modifier.height(Dimens.sm))
+            OutlinedTextField(
+                value = notes,
+                onValueChange = { viewModel.setNotes(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(96.dp),
+                label = { Text("记录进展、想法或参考资料") },
+                shape = RoundedCornerShape(Dimens.cardCornerRadius),
+                maxLines = 4
+            )
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
+            // 预计耗时（#87）
+            Text("预计耗时（#87）", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface)
+            Spacer(modifier = Modifier.height(Dimens.sm))
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                listOf(15 to "15 分", 30 to "30 分", 60 to "1 小时", 90 to "1.5 小时", 120 to "2 小时")
+                    .forEach { (mins, label) ->
+                        FilterChip(
+                            selected = estimatedMinutes == mins,
+                            onClick = { viewModel.setEstimatedMinutes(mins) },
+                            label = { Text(label, fontSize = 13.sp) }
+                        )
+                    }
             }
 
             Spacer(modifier = Modifier.height(Dimens.lg))

@@ -92,7 +92,9 @@ object Recurrence {
  * @property recurrenceRule 重复规则（见 Recurrence 常量）
  * @property createdAt 创建时间
  * @property updatedAt 更新时间
- * @property completedAt 完成时间
+ *     @property completedAt 完成时间
+ * @property notes 备注/进展记录（#7）
+ * @property estimatedMinutes 预计耗时（分钟，#87）
  */
 @Serializable
 data class TodoItem(
@@ -121,7 +123,9 @@ data class TodoItem(
     val energy: String = "NONE", // 精力标记（#36）：NONE/LOW/MEDIUM/HIGH
     val blockedByTaskId: String? = null, // 被此任务依赖阻塞（#16）
     val linkedTaskIds: List<String> = emptyList(), // 双向链接的任务ID（#34）
-    val attachments: List<String> = emptyList() // 附件URI列表（#6）
+    val attachments: List<String> = emptyList(), // 附件URI列表（#6）
+    val notes: String = "", // 备注/进展记录（#7）
+    val estimatedMinutes: Int = 0 // 预计耗时（分钟，#87）
 ) {
     companion object {
         fun generateId(): String =

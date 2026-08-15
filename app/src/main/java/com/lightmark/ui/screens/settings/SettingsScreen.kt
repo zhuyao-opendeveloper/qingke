@@ -552,6 +552,31 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(Dimens.lg))
 
+            // ====== 关于 / 停更公告（#v3.0.0） ======
+            SectionTitle("关于")
+            LightMarkCard(modifier = Modifier.fillMaxWidth()) {
+                Column {
+                    Text("暂时停更公告", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    Text(
+                        text = "感谢你使用轻刻！作者目前正全力备战高考，暂时无法继续更新。" +
+                            "本版本（v3.0.0）为当前阶段的收官之作，待大一开学后将恢复开发，" +
+                            "带来更多新功能与体验优化。你的数据始终安全保存在本机，随时可备份导出。",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(Dimens.sm))
+                    Text(
+                        text = "—— 轻刻开发团队 敬上",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.lg))
+
             // ====== 隐私 ======
             SectionTitle("隐私")
             LightMarkCard(
@@ -572,7 +597,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(Dimens.xxxl))
 
             Text(
-                text = "轻刻 LightMark v1.1.0",
+                text = "轻刻 LightMark v3.0.0",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.align(Alignment.CenterHorizontally)

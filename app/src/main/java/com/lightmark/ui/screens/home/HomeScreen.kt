@@ -81,7 +81,10 @@ fun HomeScreen(
     val categories by viewModel.categories.collectAsState()
     val selectedCategoryId by viewModel.selectedCategoryId.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
-    val lastDeleted by viewModel.lastDeleted.collectAsState()
+    val pendingUndo by viewModel.pendingUndo.collectAsState()
+    val conflictingIds by viewModel.conflictingIds.collectAsState()
+    val todayEstimatedMinutes by viewModel.todayEstimatedMinutes.collectAsState()
+    val announcementDismissed by viewModel.announcementDismissed.collectAsState()
     val viewMode by viewModel.viewMode.collectAsState()
     val subtaskCounts by viewModel.subtaskCounts.collectAsState()
     val selectionMode by viewModel.selectionMode.collectAsState()
@@ -122,19 +125,19 @@ fun HomeScreen(
     var showBulkPriorityMenu by remember { mutableStateOf(false) }
     var showQuickAdd by remember { mutableStateOf(false) }
 
-    // 删除撤销提示
-    LaunchedEffect(lastDeleted) {
-        val deleted = lastDeleted
-        if (deleted != null) {
+    // 全功能撤销提示（#124）
+    LaunchedEffect(pendingUndo) {
+        val action = pendingUndo
+        if (action != null) {
             val result = snackbarHostState.showSnackbar(
-                message = "已删除「${deleted.title}」",
+                message = action.message,
                 actionLabel = "撤销",
                 duration = SnackbarDuration.Short
             )
             if (result == SnackbarResult.ActionPerformed) {
-                viewModel.undoDelete()
+                viewModel.undoLastAction()
             } else {
-                viewModel.clearLastDeleted()
+                viewModel.clearPendingUndo()
             }
         }
     }
@@ -446,6 +449,48 @@ fun HomeScreen(
                 }
             }
 
+            // 停更公告横幅（#v3.0.0，可关闭）
+            if (!announcementDismissed) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.lg, vertical = Dimens.xs),
+                    shape = RoundedCornerShape(Dimens.cardCornerRadius),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(Dimens.md),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "📢 暂时停更公告",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "作者正在备战高考，暂无法更新。大一开学后将继续开发，感谢陪伴 ❤",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        }
+                        IconButton(onClick = { viewModel.dismissAnnouncement() }) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "关闭公告",
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        }
+                    }
+                }
+            }
+
             // 列表 / 空状态（下拉刷新）
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing),
@@ -475,6 +520,25 @@ fun HomeScreen(
                             bottom = 96.dp
                         )
                     ) {
+                        if (viewMode == HomeViewMode.ACTIVE && conflictingIds.isNotEmpty()) {
+                            item {
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = Dimens.lg, vertical = Dimens.xs),
+                                    shape = RoundedCornerShape(Dimens.cardCornerRadius),
+                                    color = MaterialTheme.colorScheme.errorContainer
+                                ) {
+                                    Text(
+                                        text = "⚠ 有 ${conflictingIds.size} 个任务的时间安排相互冲突，请检查开始/截止时间（#88）",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        modifier = Modifier.padding(Dimens.md)
+                                    )
+                                }
+                            }
+                        }
+
                         item {
                             Text(
                                 text = when (viewMode) {
@@ -608,7 +672,8 @@ fun HomeScreen(
                                     },
                                     onRestore = { viewModel.restoreTodo(todo.id) },
                                     onFocus = { onNavigateToFocus(todo.id) },
-                                    iconProvider = iconProvider
+                                    iconProvider = iconProvider,
+                                    isConflict = conflictingIds.contains(todo.id)
                                 )
                                     }
                                 )

@@ -51,7 +51,8 @@ class SettingsRepository @Inject constructor(
             reminderLeadMinutes = prefs[KEY_REMINDER_LEAD_MINUTES] ?: 10,
             listDensity = prefs[KEY_LIST_DENSITY] ?: "COZY",
             fontScale = prefs[KEY_FONT_SCALE] ?: 1.0f,
-            biometricLockEnabled = prefs[KEY_BIOMETRIC_LOCK] ?: false
+            biometricLockEnabled = prefs[KEY_BIOMETRIC_LOCK] ?: false,
+            announcementDismissed = prefs[KEY_ANNOUNCEMENT_DISMISSED] ?: false
         )
     }
 
@@ -145,6 +146,11 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[KEY_BIOMETRIC_LOCK] = enabled }
     }
 
+    /** 停更公告横幅是否已关闭（#v3.0.0） */
+    suspend fun setAnnouncementDismissed(dismissed: Boolean) {
+        dataStore.edit { it[KEY_ANNOUNCEMENT_DISMISSED] = dismissed }
+    }
+
     companion object {
         private val KEY_PRIVACY_ACCEPTED = booleanPreferencesKey("privacy_accepted")
         private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
@@ -164,6 +170,7 @@ class SettingsRepository @Inject constructor(
         private val KEY_LIST_DENSITY = stringPreferencesKey("list_density")
         private val KEY_FONT_SCALE = floatPreferencesKey("font_scale")
         private val KEY_BIOMETRIC_LOCK = booleanPreferencesKey("biometric_lock_enabled")
+        private val KEY_ANNOUNCEMENT_DISMISSED = booleanPreferencesKey("announcement_dismissed_v3")
     }
 }
 
@@ -188,5 +195,6 @@ data class LightMarkSettings(
     val reminderLeadMinutes: Int = 10,
     val listDensity: String = "COZY",
     val fontScale: Float = 1.0f,
-    val biometricLockEnabled: Boolean = false
+    val biometricLockEnabled: Boolean = false,
+    val announcementDismissed: Boolean = false
 )

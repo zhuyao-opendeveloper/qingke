@@ -116,6 +116,7 @@ fun HabitScreen(
                     onToggle = { viewModel.toggleCheck(it) },
                     onIncrement = { viewModel.incrementCheck(it) },
                     onArchive = { id, archived -> viewModel.setArchived(id, archived) },
+                    onPause = { id, paused -> viewModel.setPaused(id, paused) },
                     onDelete = { viewModel.deleteHabit(it) }
                 )
             } else {
@@ -160,6 +161,7 @@ private fun HabitList(
     onToggle: (String) -> Unit,
     onIncrement: (String) -> Unit,
     onArchive: (String, Boolean) -> Unit,
+    onPause: (String, Boolean) -> Unit,
     onDelete: (String) -> Unit
 ) {
     LazyColumn(
@@ -207,6 +209,7 @@ private fun HabitList(
                 onToggle = { onToggle(stat.habit.id) },
                 onIncrement = { onIncrement(stat.habit.id) },
                 onArchive = { onArchive(stat.habit.id, !stat.habit.archived) },
+                onPause = { onPause(stat.habit.id, !stat.habit.paused) },
                 onDelete = { onDelete(stat.habit.id) }
             )
         }
@@ -219,6 +222,7 @@ private fun HabitCard(
     onToggle: () -> Unit,
     onIncrement: () -> Unit,
     onArchive: () -> Unit,
+    onPause: () -> Unit,
     onDelete: () -> Unit
 ) {
     var menu by remember { mutableStateOf(false) }
@@ -249,13 +253,29 @@ private fun HabitCard(
                 Spacer(Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stat.habit.name,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stat.habit.name,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        if (stat.habit.paused) {
+                            Spacer(Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant
+                            ) {
+                                Text(
+                                    text = "已暂停",
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
+                                )
+                            }
+                        }
+                    }
                     Spacer(Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -290,6 +310,10 @@ private fun HabitCard(
                         DropdownMenuItem(
                             text = { Text(if (stat.habit.archived) "取消归档" else "归档") },
                             onClick = { menu = false; onArchive() }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(if (stat.habit.paused) "恢复打卡" else "暂停打卡") },
+                            onClick = { menu = false; onPause() }
                         )
                         DropdownMenuItem(
                             text = { Text("删除") },

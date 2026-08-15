@@ -32,6 +32,9 @@ interface HabitDao {
     @Query("UPDATE habits SET archived = :archived WHERE id = :id")
     suspend fun setHabitArchived(id: String, archived: Boolean)
 
+    @Query("UPDATE habits SET paused = :paused WHERE id = :id")
+    suspend fun setHabitPaused(id: String, paused: Boolean)
+
     @Query("DELETE FROM habits WHERE id = :id")
     suspend fun deleteHabitById(id: String)
 

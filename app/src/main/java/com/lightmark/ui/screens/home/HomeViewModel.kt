@@ -67,8 +67,9 @@ class HomeViewModel @Inject constructor(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
-    private val _lastDeleted = MutableStateFlow<TodoItem?>(null)
-    val lastDeleted: StateFlow<TodoItem?> = _lastDeleted.asStateFlow()
+    /** 可撤销的单项操作（#124 全功能撤销栈）：保存操作前快照用于撤销 */
+    private val _pendingUndo = MutableStateFlow<UndoAction?>(null)
+    val pendingUndo: StateFlow<UndoAction?> = _pendingUndo.asStateFlow()
 
     /** 是否显示私密内容（#97）：仅当生物识别锁开启时有意义 */
     private val _showPrivate = MutableStateFlow(false)
@@ -77,6 +78,10 @@ class HomeViewModel @Inject constructor(
     /** 生物识别锁是否开启（#96/#97 共用） */
     private val _biometricLockEnabled = MutableStateFlow(false)
     val biometricLockEnabled: StateFlow<Boolean> = _biometricLockEnabled.asStateFlow()
+
+    /** 停更公告横幅是否已关闭（应用内，#v3.0.0） */
+    private val _announcementDismissed = MutableStateFlow(false)
+    val announcementDismissed: StateFlow<Boolean> = _announcementDismissed.asStateFlow()
 
     fun setShowPrivate(show: Boolean) { _showPrivate.value = show }
 
@@ -143,6 +148,16 @@ class HomeViewModel @Inject constructor(
                 _biometricLockEnabled.value = enabled
             }
         }
+        viewModelScope.launch {
+            settingsRepository.settings.map { it.announcementDismissed }.collect { dismissed ->
+                _announcementDismissed.value = dismissed
+            }
+        }
+    }
+
+    /** 关闭停更公告横幅（#v3.0.0） */
+    fun dismissAnnouncement() {
+        viewModelScope.launch { settingsRepository.setAnnouncementDismissed(true) }
     }
 
     /** 回收站按保留天数自动清理（#101），0 表示永久保留 */
@@ -175,6 +190,55 @@ class HomeViewModel @Inject constructor(
                 .groupingBy { it.parentId!! }.eachCount()
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    /** 时间冲突检测（#88）：同一天计划时间段相互重叠的活跃未完成任务 id 集合 */
+    val conflictingIds: StateFlow<Set<String>> = todoDao.getActiveTodos()
+        .map { list ->
+            list.filter { !it.isCompleted && !it.isArchived && !it.isDeleted }
+                .map { it.toDomain() }
+        }
+        .map { computeTimeConflicts(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    /** 估算今日活跃任务总耗时（分钟，#87） */
+    val todayEstimatedMinutes: StateFlow<Int> = todoDao.getActiveTodos()
+        .map { list ->
+            list.filter { !it.isCompleted && !it.isDeleted && it.estimatedMinutes > 0 }
+                .sumOf { it.estimatedMinutes }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    private fun computeTimeConflicts(items: List<TodoItem>): Set<String> {
+        val result = mutableSetOf<String>()
+        val scheduled = items.filter {
+            it.startDate != null && it.dueDate != null
+        }
+        for (i in scheduled.indices) {
+            val a = scheduled[i]
+            // 截止早于开始：逻辑冲突
+            if (a.startDate != null && a.dueDate != null && a.startDate!! > a.dueDate!!) {
+                result.add(a.id)
+            }
+            if (a.startDate == null || a.dueDate == null) continue
+            for (j in i + 1 until scheduled.size) {
+                val b = scheduled[j]
+                if (b.startDate == null || b.dueDate == null) continue
+                if (sameDay(a.startDate!!, b.startDate!!) &&
+                    a.startDate!! < b.dueDate!! && b.startDate!! < a.dueDate!!
+                ) {
+                    result.add(a.id)
+                    result.add(b.id)
+                }
+            }
+        }
+        return result
+    }
+
+    private fun sameDay(a: Long, b: Long): Boolean {
+        val z = java.time.ZoneId.systemDefault()
+        return java.time.Instant.ofEpochMilli(a).atZone(z).toLocalDate() ==
+            java.time.Instant.ofEpochMilli(b).atZone(z).toLocalDate()
+    }
 
     /** 快速筛选（#59 智能清单） */
     private val _quickFilter = MutableStateFlow(QuickFilter.ALL)
@@ -368,6 +432,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val todo = todoDao.getTodoById(todoId) ?: return@launch
             val willComplete = !todo.isCompleted
+            _pendingUndo.value = if (willComplete)
+                UndoAction.Completed(todo.toDomain())
+            else UndoAction.Uncompleted(todo.toDomain())
             todoDao.updateTodo(
                 todo.copy(
                     isCompleted = willComplete,
@@ -427,7 +494,7 @@ class HomeViewModel @Inject constructor(
     fun deleteTodo(todoId: String) {
         viewModelScope.launch {
             val entity = todoDao.getTodoById(todoId) ?: return@launch
-            _lastDeleted.value = entity.toDomain()
+            _pendingUndo.value = UndoAction.Deleted(entity.toDomain())
             // 软删除：移入回收站（#25）
             todoDao.updateTodo(
                 entity.copy(
@@ -451,6 +518,7 @@ class HomeViewModel @Inject constructor(
     fun archiveTodo(todoId: String) {
         viewModelScope.launch {
             val entity = todoDao.getTodoById(todoId) ?: return@launch
+            _pendingUndo.value = UndoAction.Archived(entity.toDomain())
             todoDao.updateTodo(
                 entity.copy(isArchived = true, isDeleted = false, updatedAt = System.currentTimeMillis())
             )
@@ -461,6 +529,7 @@ class HomeViewModel @Inject constructor(
     fun unarchiveTodo(todoId: String) {
         viewModelScope.launch {
             val entity = todoDao.getTodoById(todoId) ?: return@launch
+            _pendingUndo.value = UndoAction.Unarchived(entity.toDomain())
             todoDao.updateTodo(entity.copy(isArchived = false, updatedAt = System.currentTimeMillis()))
         }
     }
@@ -469,6 +538,7 @@ class HomeViewModel @Inject constructor(
     fun restoreTodo(todoId: String) {
         viewModelScope.launch {
             val entity = todoDao.getTodoById(todoId) ?: return@launch
+            _pendingUndo.value = UndoAction.Restored(entity.toDomain())
             todoDao.updateTodo(
                 entity.copy(isDeleted = false, deletedAt = null, updatedAt = System.currentTimeMillis())
             )
@@ -613,17 +683,18 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun undoDelete() {
+    fun undoLastAction() {
         viewModelScope.launch {
-            _lastDeleted.value?.let { item ->
-                todoDao.insertTodo(TodoEntity.fromDomain(item))
+            _pendingUndo.value?.let { action ->
+                // 快照为操作前状态，直接写回即可恢复（软删除保留原行）
+                todoDao.updateTodo(TodoEntity.fromDomain(action.snapshot))
             }
-            _lastDeleted.value = null
+            _pendingUndo.value = null
         }
     }
 
-    fun clearLastDeleted() {
-        _lastDeleted.value = null
+    fun clearPendingUndo() {
+        _pendingUndo.value = null
     }
 
     fun setSearchQuery(query: String) {
@@ -708,4 +779,15 @@ enum class HomeViewMode {
     ACTIVE,     // 待办（活跃）
     ARCHIVED,   // 已归档
     TRASH       // 回收站
+}
+
+/** 可撤销的单条操作（#124）：保存操作前快照，用于统一撤销 */
+sealed class UndoAction(val message: String) {
+    abstract val snapshot: TodoItem
+    data class Deleted(override val snapshot: TodoItem) : UndoAction("已移入回收站")
+    data class Completed(override val snapshot: TodoItem) : UndoAction("已标记为完成")
+    data class Uncompleted(override val snapshot: TodoItem) : UndoAction("已标记为未完成")
+    data class Archived(override val snapshot: TodoItem) : UndoAction("已归档")
+    data class Unarchived(override val snapshot: TodoItem) : UndoAction("已取消归档")
+    data class Restored(override val snapshot: TodoItem) : UndoAction("已从回收站恢复")
 }

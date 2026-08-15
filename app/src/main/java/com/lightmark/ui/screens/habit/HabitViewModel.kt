@@ -40,9 +40,9 @@ class HabitViewModel @Inject constructor(
     val goals: StateFlow<List<GoalEntity>> = habitDao.getAllGoals()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** 今日整体完成度：已打卡习惯数 / 未归档习惯数 */
+    /** 今日整体完成度：已打卡习惯数 / 未归档且未暂停习惯数 */
     val todayProgress: StateFlow<Pair<Int, Int>> = stats.map { list ->
-        val active = list.filter { !it.habit.archived }
+        val active = list.filter { !it.habit.archived && !it.habit.paused }
         active.count { it.checkedToday } to active.size
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0 to 0)
 
@@ -72,6 +72,11 @@ class HabitViewModel @Inject constructor(
 
     fun setArchived(habitId: String, archived: Boolean) {
         viewModelScope.launch { habitDao.setHabitArchived(habitId, archived) }
+    }
+
+    /** 暂停 / 恢复打卡（休假或休息日，#93） */
+    fun setPaused(habitId: String, paused: Boolean) {
+        viewModelScope.launch { habitDao.setHabitPaused(habitId, paused) }
     }
 
     fun deleteHabit(habitId: String) {

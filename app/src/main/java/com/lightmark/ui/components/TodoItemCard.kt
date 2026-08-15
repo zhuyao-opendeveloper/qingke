@@ -69,6 +69,7 @@ fun TodoItemCard(
     selectionMode: Boolean = false,
     selected: Boolean = false,
     onLongClick: (() -> Unit)? = null,
+    isConflict: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -147,13 +148,26 @@ fun TodoItemCard(
                     )
                 }
 
-                // 底部信息（标签、截止日期、子任务、阻塞、重复）
-                if (item.tags.isNotEmpty() || item.dueDate != null || subtaskCount > 0 || item.isBlocked || !item.recurrenceRule.isNullOrBlank() || item.energy != "NONE" || item.linkedTaskIds.isNotEmpty() || item.attachments.isNotEmpty()) {
+                // 底部信息（标签、截止日期、子任务、阻塞、重复、备注、预计耗时、冲突）
+                if (item.tags.isNotEmpty() || item.dueDate != null || subtaskCount > 0 || item.isBlocked || !item.recurrenceRule.isNullOrBlank() || item.energy != "NONE" || item.linkedTaskIds.isNotEmpty() || item.attachments.isNotEmpty() || item.notes.isNotBlank() || item.estimatedMinutes > 0 || isConflict) {
                     Row(
                         modifier = Modifier.padding(top = Dimens.sm),
                         horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (isConflict) {
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = MaterialTheme.colorScheme.errorContainer
+                            ) {
+                                Text(
+                                    text = "⚠ 时间冲突",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                         item.tags.take(3).forEach { tag ->
                             TagChip(text = tag)
                         }
@@ -182,6 +196,12 @@ fun TodoItemCard(
                         }
                         if (item.attachments.isNotEmpty()) {
                             TagChip(text = "附件 ${item.attachments.size}")
+                        }
+                        if (item.estimatedMinutes > 0) {
+                            TagChip(text = "⏱ ${item.estimatedMinutes}分钟")
+                        }
+                        if (item.notes.isNotBlank()) {
+                            TagChip(text = "📝 备注")
                         }
                     }
                 }

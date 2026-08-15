@@ -18,6 +18,7 @@ data class HabitEntity(
     val targetPerPeriod: Int = 1,
     val note: String = "",
     val archived: Boolean = false,
+    val paused: Boolean = false, // 暂停打卡（休假/休息日，#93）
     val sortOrder: Int = 0,
     val createdAt: Long = System.currentTimeMillis()
 )

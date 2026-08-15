@@ -91,6 +91,12 @@ class AddEditTodoViewModel @Inject constructor(
     private val _attachments = MutableStateFlow<List<String>>(emptyList()) // 附件URI（#6）
     val attachments: StateFlow<List<String>> = _attachments.asStateFlow()
 
+    private val _notes = MutableStateFlow("") // 备注/进展（#7）
+    val notes: StateFlow<String> = _notes.asStateFlow()
+
+    private val _estimatedMinutes = MutableStateFlow(0) // 预计耗时分钟（#87）
+    val estimatedMinutes: StateFlow<Int> = _estimatedMinutes.asStateFlow()
+
     /** 可作为父任务的候选（排除已删除与自身） */
     val parentCandidates: StateFlow<List<TodoItem>> = todoDao.getAllTodos()
         .map { list -> list.filter { !it.isDeleted }.map { it.toDomain() } }
@@ -143,6 +149,8 @@ class AddEditTodoViewModel @Inject constructor(
                 else todo.linkedTaskIds.split(",").map { it.trim() }
             _attachments.value = if (todo.attachments.isBlank()) emptyList()
                 else todo.attachments.split(",").map { it.trim() }
+            _notes.value = todo.notes
+            _estimatedMinutes.value = todo.estimatedMinutes
         }
     }
 
@@ -171,6 +179,8 @@ class AddEditTodoViewModel @Inject constructor(
         _attachments.value = _attachments.value - uri
     }
     fun setReminderEnabled(enabled: Boolean) { _reminderEnabled.value = enabled }
+    fun setNotes(value: String) { _notes.value = value }
+    fun setEstimatedMinutes(minutes: Int) { _estimatedMinutes.value = minutes.coerceAtLeast(0) }
 
     fun addTag(tag: String) {
         val trimmed = tag.trim()
@@ -267,6 +277,8 @@ class AddEditTodoViewModel @Inject constructor(
                     blockedByTaskId = _blockedByTaskId.value,
                     linkedTaskIds = _linkedTaskIds.value.joinToString(","),
                     attachments = _attachments.value.joinToString(","),
+                    notes = _notes.value,
+                    estimatedMinutes = _estimatedMinutes.value,
                     updatedAt = now
                 )
                 todoDao.updateTodo(updated)
@@ -290,6 +302,8 @@ class AddEditTodoViewModel @Inject constructor(
                     blockedByTaskId = _blockedByTaskId.value,
                     linkedTaskIds = _linkedTaskIds.value.joinToString(","),
                     attachments = _attachments.value.joinToString(","),
+                    notes = _notes.value,
+                    estimatedMinutes = _estimatedMinutes.value,
                     createdAt = now,
                     updatedAt = now
                 )
